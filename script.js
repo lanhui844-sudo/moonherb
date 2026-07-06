@@ -248,6 +248,11 @@ const moonPhaseText = document.querySelector("#moonPhaseText");
 const moonNextText = document.querySelector("#moonNextText");
 const favoriteList = document.querySelector("#favoriteList");
 const clearFavoritesButton = document.querySelector("#clearFavoritesButton");
+const globalSearchInput = document.querySelector("#globalSearchInput");
+const globalSearchButton = document.querySelector("#globalSearchButton");
+const searchResults = document.querySelector("#searchResults");
+const searchScopeButtons = document.querySelectorAll("[data-search-scope]");
+let searchScope = "all";
 
 function showToast(message) {
   statusToast.textContent = message;
@@ -286,6 +291,108 @@ function updateBookmarkState() {
   const isFavorited = isRecipeFavorited(recipe);
   bookmarkButton.classList.toggle("is-active", isFavorited);
   bookmarkButton.setAttribute("aria-pressed", String(isFavorited));
+}
+
+function normalizeSearchText(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function createSearchHaystack(parts) {
+  return normalizeSearchText(parts.flat().filter(Boolean).join(" "));
+}
+
+function collectSearchItems(scope = searchScope) {
+  const favoriteItems = favorites.map((favorite, index) => ({
+    type: "收藏",
+    title: favorite.title,
+    text: favorite.use || favorite.detail || "已保存到收藏档案。",
+    action: "favorites",
+    index,
+    haystack: createSearchHaystack([favorite.title, favorite.use, favorite.detail, favorite.tags || []]),
+  }));
+
+  if (scope === "favorites") return favoriteItems;
+
+  return [
+    ...herbs.map((herb, index) => ({
+      type: "草药",
+      title: herb.title,
+      text: herb.text || herb.detail || "草药档案",
+      action: "library",
+      index,
+      haystack: createSearchHaystack([herb.title, herb.text, herb.detail]),
+    })),
+    ...rituals.map((ritual, index) => ({
+      type: "仪式",
+      title: ritual.title,
+      text: ritual.intention || ritual.timing || "仪式专区",
+      action: "rituals",
+      index,
+      haystack: createSearchHaystack([ritual.title, ritual.timing, ritual.intention, ritual.tools || [], ritual.steps || []]),
+    })),
+    ...recipes.map((recipe, index) => ({
+      type: "配方",
+      title: recipe.title,
+      text: recipe.use || recipe.detail || "配方手记",
+      action: "recipes",
+      index,
+      haystack: createSearchHaystack([recipe.title, recipe.use, recipe.detail, recipe.tags || [], recipe.steps || []]),
+    })),
+    ...favoriteItems,
+  ];
+}
+
+function renderSearchResults(results, query) {
+  if (!query) {
+    searchResults.innerHTML = `
+      <button class="search-result" type="button" disabled>
+        <span>搜索提示</span>
+        <strong>输入关键词后搜索</strong>
+        <small>可以搜草药、仪式、配方，也可以只搜收藏。</small>
+      </button>
+    `;
+    return;
+  }
+
+  if (!results.length) {
+    searchResults.innerHTML = `
+      <button class="search-result" type="button" disabled>
+        <span>没有匹配</span>
+        <strong>换一个关键词试试</strong>
+        <small>当前范围：${searchScope === "favorites" ? "收藏" : "全部内容"}</small>
+      </button>
+    `;
+    return;
+  }
+
+  searchResults.innerHTML = results
+    .slice(0, 8)
+    .map(
+      (result, index) => `
+        <button class="search-result" type="button" data-search-result="${index}">
+          <span>${result.type}</span>
+          <strong>${result.title}</strong>
+          <small>${result.text}</small>
+        </button>
+      `,
+    )
+    .join("");
+}
+
+function performGlobalSearch() {
+  const query = normalizeSearchText(globalSearchInput.value);
+  const results = query ? collectSearchItems().filter((item) => item.haystack.includes(query)) : [];
+  searchResults.currentResults = results;
+  renderSearchResults(results, query);
+}
+
+function openSearchResult(result) {
+  if (!result) return;
+  if (result.action === "recipes") {
+    currentRecipe = result.index;
+    renderRecipe(currentRecipe);
+  }
+  showPage(result.action);
 }
 
 function scrollToSection(selector) {
@@ -489,6 +596,7 @@ function renderFavorites() {
         <div class="tag-row"><span>个人收藏</span></div>
       </article>
     `;
+    if (!commandPanel.hidden && searchScope === "favorites") performGlobalSearch();
     return;
   }
 
@@ -507,6 +615,8 @@ function renderFavorites() {
       `,
     )
     .join("");
+
+  if (!commandPanel.hidden && searchScope === "favorites") performGlobalSearch();
 }
 
 function addCustomRecipe(recipe) {
@@ -595,13 +705,28 @@ menuButton.addEventListener("click", () => {
   const isOpen = commandPanel.hidden;
   commandPanel.hidden = !isOpen;
   menuButton.setAttribute("aria-expanded", String(isOpen));
-  showToast(isOpen ? "目录已展开。" : "目录已收起。");
+  showToast(isOpen ? "搜索栏已展开。" : "搜索栏已收起。");
+  if (isOpen) globalSearchInput.focus();
 });
 
-commandPanel.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-view]");
+searchScopeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    searchScope = button.dataset.searchScope;
+    searchScopeButtons.forEach((item) => item.classList.toggle("active", item === button));
+    performGlobalSearch();
+  });
+});
+
+globalSearchButton.addEventListener("click", performGlobalSearch);
+
+globalSearchInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") performGlobalSearch();
+});
+
+searchResults.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-search-result]");
   if (!button) return;
-  showPage(button.dataset.view);
+  openSearchResult(searchResults.currentResults?.[Number(button.dataset.searchResult)]);
 });
 
 document.querySelectorAll("[data-view]").forEach((entry) => {
