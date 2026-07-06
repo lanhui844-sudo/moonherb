@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>月草工坊 | 仪式草药配方</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <aside class="moon-lock" aria-label="今日月相信息">
+      <span id="moonDateText"></span>
+      <strong id="moonPhaseText"></strong>
+      <em id="moonNextText"></em>
+    </aside>
+
+    <main class="app-shell">
+      <header class="topbar" aria-label="主导航">
+        <nav class="nav-card nav-left">
+          <button class="brand" id="homeButton" type="button" aria-label="月草工坊首页">
+            <span class="brand-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img">
+                <path d="M19.4 4.6c-5.9.5-10.2 3-12.7 7.4-1.4 2.5-1.6 5.1-.5 7.4 2.4.4 5-.2 7.2-1.9 3.9-3 5.6-7.2 6-12.9Z" />
+                <path d="M6.8 18.6c2.5-4 5.4-6.7 8.8-8.1" />
+              </svg>
+            </span>
+          </button>
+          <button class="nav-pill active" id="todayButton" type="button">
+            <span></span>
+            今日调配
+          </button>
+          <button class="nav-link" type="button" data-view="library">草药档案</button>
+          <button class="nav-link" type="button" data-view="recipes">配方手记</button>
+        </nav>
+
+        <nav class="nav-card nav-right" aria-label="工具">
+          <button class="icon-button" id="menuButton" type="button" aria-label="打开目录" aria-expanded="false">
+            <span></span><span></span>
+          </button>
+          <button class="orb-button" id="bookmarkButton" type="button" aria-label="收藏配方" aria-pressed="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 4.5h10c.6 0 1 .4 1 1v14l-6-3.5-6 3.5v-14c0-.6.4-1 1-1Z" />
+            </svg>
+          </button>
+        </nav>
+      </header>
+
+      <div class="command-panel" id="commandPanel" hidden>
+        <button type="button" data-view="library">草药档案</button>
+        <button type="button" data-view="rituals">仪式专区</button>
+        <button type="button" data-view="recipes">配方手记</button>
+        <button type="button" data-view="upload">上传配方</button>
+      </div>
+
+      <section class="hero-grid page-view" id="homePage" data-page="home" aria-label="月草工坊总览首页">
+        <article class="feature-card home-feature">
+          <img
+            src="./assets/hero-herbs.png"
+            alt="草药、玻璃瓶、月相纸张和仪式器皿组成的现代草药工作台"
+          />
+          <div class="feature-overlay"></div>
+
+          <div class="feature-top">
+            <p><span class="red-spark"></span>月草工坊</p>
+            <div class="counter home-counter"><strong>04</strong> 个入口</div>
+          </div>
+
+          <div class="home-feature-copy">
+            <h1>草药、仪式与配方的总工作台</h1>
+            <p>先从分类进入，再查看具体草药、仪式步骤、配方手记，或上传自己的记录。</p>
+          </div>
+
+          <div class="home-category-grid">
+            <button type="button" data-view="library">
+              <span>01</span>
+              草药档案
+            </button>
+            <button type="button" data-view="rituals">
+              <span>02</span>
+              仪式专区
+            </button>
+            <button type="button" data-view="recipes">
+              <span>03</span>
+              配方手记
+            </button>
+            <button type="button" data-view="upload">
+              <span>04</span>
+              自定义上传
+            </button>
+          </div>
+        </article>
+
+        <aside class="side-stack">
+          <section class="headline-card">
+            <h2>今天从哪里开始？</h2>
+            <p>首页先做导航，不把你直接塞进某个详情页。选一个入口，再进入对应专区。</p>
+            <button class="outline-cta" type="button" id="exploreButton">
+              查看全部分类 <span>›</span>
+            </button>
+            <div class="moon-shape" aria-hidden="true"></div>
+          </section>
+
+          <section class="search-card">
+            <button class="expand-button" id="expandSearchButton" type="button" aria-label="展开筛选">↗</button>
+            <h2>快速查找</h2>
+            <label for="intentInput">输入目标，匹配草药、仪式或配方</label>
+            <input id="intentInput" type="text" placeholder="边界、睡眠、专注、净场..." />
+            <div class="intent-options" aria-label="常用目标">
+              <button type="button" data-intent="边界">边界</button>
+              <button type="button" data-intent="睡眠">睡眠</button>
+              <button type="button" data-intent="净场">净场</button>
+            </div>
+            <button class="primary-cta" type="button" id="searchButton">
+              搜索工作台 <span>⌕</span>
+            </button>
+          </section>
+        </aside>
+      </section>
+
+      <section class="overview-strip page-view" id="overview" data-page="overview" aria-label="分类总览" hidden>
+        <article data-view="library">
+          <span>Herbs</span>
+          <h2>草药档案</h2>
+          <p>按气味、用途、禁忌和搭配关系浏览材料。</p>
+        </article>
+        <article data-view="rituals">
+          <span>Rituals</span>
+          <h2>仪式专区</h2>
+          <p>按时间、场景和目标查看可执行步骤。</p>
+        </article>
+        <article data-view="recipes">
+          <span>Recipes</span>
+          <h2>配方手记</h2>
+          <p>把材料组合成可收藏、可切换的配方卡。</p>
+        </article>
+        <article data-view="upload">
+          <span>Studio</span>
+          <h2>自定义上传</h2>
+          <p>上传图片，创建你自己的草药或仪式记录。</p>
+        </article>
+      </section>
+
+      <section class="library-strip page-view" id="library" data-page="library" aria-label="草药档案" hidden>
+        <button class="back-home" type="button" data-view="home">返回总入口</button>
+        <div class="ritual-head">
+          <div class="section-heading">
+            <h2>草药档案</h2>
+            <p>每一味草药都按气味、适用场景和搭配方式整理，像查笔记一样轻松。</p>
+          </div>
+          <button type="button" class="outline-cta compact-cta" id="newHerbButton">添加草药 <span>+</span></button>
+        </div>
+        <div class="herb-list">
+          <article>
+            <span class="herb-dot sage"></span>
+            <h3>迷迭香</h3>
+            <p>清场、提神、边界感</p>
+          </article>
+          <article>
+            <span class="herb-dot violet"></span>
+            <h3>薰衣草</h3>
+            <p>放松、睡眠、柔化情绪</p>
+          </article>
+          <article>
+            <span class="herb-dot gold"></span>
+            <h3>月桂叶</h3>
+            <p>愿望书写、祝福、收尾</p>
+          </article>
+          <article>
+            <span class="herb-dot blue"></span>
+            <h3>艾草</h3>
+            <p>净场、直觉、换季整理</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="ritual-zone page-view" id="rituals" data-page="rituals" aria-label="仪式专区" hidden>
+        <button class="back-home" type="button" data-view="home">返回总入口</button>
+        <div class="ritual-head">
+          <div>
+            <h2>仪式专区</h2>
+            <p>把草药配方放进具体场景里：什么时候做、准备什么、按什么顺序完成。</p>
+          </div>
+          <button type="button" class="outline-cta compact-cta" id="newRitualButton">添加仪式 <span>+</span></button>
+        </div>
+
+        <div class="ritual-layout">
+          <div class="ritual-list" id="ritualList"></div>
+        </div>
+      </section>
+
+      <section class="recipe-panel page-view" id="recipes" data-page="recipes" aria-live="polite" hidden>
+        <button class="back-home" type="button" data-view="home">返回总入口</button>
+        <div>
+          <div class="recipe-controls inline-controls" aria-label="切换精选配方">
+            <button type="button" class="round-control" data-step="-1" aria-label="上一个配方">‹</button>
+            <span><strong id="recipeIndex">01</strong> /03</span>
+            <button type="button" class="arrow-control" data-step="1" aria-label="下一个配方">→</button>
+          </div>
+          <button class="delete-button recipe-delete" id="deleteRecipeButton" type="button">删除当前配方</button>
+          <h2 id="detailTitle">月窗净场香囊</h2>
+          <p id="detailText">
+            把艾草、迷迭香、薰衣草和一片月桂叶装入棉布袋，放在窗边过一夜。它适合在打扫、换季或重新布置房间之后使用。
+          </p>
+          <div class="recipe-detail-meta">
+            <span>调和度 <strong id="recipeRating">4.86</strong> / 5.00</span>
+            <span id="recipeUse">空间清理后，用来把气味和心绪慢慢收拢。</span>
+          </div>
+          <div class="energy-meter detail-meter"><span id="energyMeter"></span></div>
+          <div class="tag-row detail-tags" id="tagRow">
+            <span>艾草</span><span>迷迭香</span><span>薰衣草</span><span>月桂叶</span>
+          </div>
+        </div>
+        <ol id="stepsList">
+          <li>先写一句这次想清理掉的状态。</li>
+          <li>按从浓到淡的气味顺序加入草药。</li>
+          <li>放在门口、书桌或床头，保留 3 晚即可。</li>
+        </ol>
+      </section>
+
+      <p class="status-toast" id="statusToast" role="status" aria-live="polite" hidden></p>
+
+      <section class="upload-panel page-view" id="upload" data-page="upload" hidden>
+        <button class="back-home" type="button" data-view="home">返回总入口</button>
+        <div class="upload-copy">
+          <h2>自定义工作台</h2>
+          <p>在这里添加自己的草药档案、草药配方或仪式流程，新增内容会进入对应专区。</p>
+        </div>
+
+        <div class="custom-tabs" role="tablist" aria-label="自定义类型">
+          <button class="active" type="button" data-custom-tab="herbProfile" role="tab" aria-selected="true">草药档案</button>
+          <button type="button" data-custom-tab="herb" role="tab" aria-selected="false">草药配方</button>
+          <button type="button" data-custom-tab="ritual" role="tab" aria-selected="false">仪式流程</button>
+        </div>
+
+        <aside class="source-panel" aria-label="资料来源">
+          <div>
+            <h3>资料来源</h3>
+            <p>记录参考书、网站、课程或自己的观察，之后会跟随新增内容一起显示。</p>
+          </div>
+          <label>
+            来源名称
+            <input id="sourceTitle" type="text" placeholder="例如：草药魔法手记" />
+          </label>
+          <div class="field-grid">
+            <label>
+              类型
+              <input id="sourceType" type="text" placeholder="书籍 / 网站 / 个人笔记" />
+            </label>
+            <label>
+              链接或页码
+              <input id="sourceLink" type="text" placeholder="URL / p.42 / 课堂记录" />
+            </label>
+          </div>
+          <button class="source-add" id="addSourceButton" type="button">添加来源</button>
+          <div class="source-list" id="sourceList"></div>
+        </aside>
+
+        <form class="ritual-form custom-tab-panel" id="customHerbForm" data-custom-panel="herbProfile">
+          <h3>自定义草药</h3>
+          <label>
+            草药名称
+            <input id="herbTitle" type="text" placeholder="例如：月光薄荷" />
+          </label>
+          <label>
+            关键词
+            <input id="herbUsage" type="text" placeholder="清醒、降温、专注" />
+          </label>
+          <label>
+            观察说明
+            <textarea id="herbNote" rows="4" placeholder="写下气味、适合场景、禁忌或自己的使用观察。"></textarea>
+          </label>
+          <button class="primary-cta" type="submit">加入草药档案 <span>+</span></button>
+        </form>
+
+        <form class="upload-form custom-tab-panel" id="customRecipeForm" data-custom-panel="herb" hidden>
+          <label class="upload-drop" for="recipeImage">
+            <input id="recipeImage" name="recipeImage" type="file" accept="image/*" />
+            <span class="upload-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 5v10" />
+                <path d="m8 9 4-4 4 4" />
+                <path d="M5 15v3.5c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5V15" />
+              </svg>
+            </span>
+            <strong>上传配方照片</strong>
+            <small id="uploadFileName">支持草药、香囊、瓶罐或仪式桌面照片</small>
+          </label>
+
+          <div class="field-grid">
+            <label>
+              配方名称
+              <input id="customTitle" type="text" placeholder="例如：清晨专注香囊" />
+            </label>
+            <label>
+              目标状态
+              <input id="customIntent" type="text" placeholder="例如：专注、睡眠、边界" />
+            </label>
+          </div>
+
+          <label>
+            草药材料
+            <input id="customIngredients" type="text" placeholder="迷迭香、薄荷、月桂叶" />
+          </label>
+
+          <label>
+            使用说明
+            <textarea id="customNote" rows="4" placeholder="写下怎么使用、适合什么时候用、需要避开什么。"></textarea>
+          </label>
+
+          <button class="primary-cta upload-submit" type="submit">生成我的配方卡 <span>+</span></button>
+        </form>
+
+        <form class="ritual-form custom-tab-panel" id="customRitualForm" data-custom-panel="ritual" hidden>
+          <h3>自定义仪式</h3>
+          <label>
+            仪式名称
+            <input id="ritualTitle" type="text" placeholder="例如：周日晚间整理" />
+          </label>
+          <div class="field-grid">
+            <label>
+              适合时间
+              <input id="ritualTiming" type="text" placeholder="新月夜 / 睡前 / 周日" />
+            </label>
+            <label>
+              仪式目标
+              <input id="ritualIntention" type="text" placeholder="安定、收尾、专注" />
+            </label>
+          </div>
+          <label>
+            准备物品
+            <input id="ritualTools" type="text" placeholder="盐碗、薰衣草、笔记本" />
+          </label>
+          <label>
+            步骤
+            <textarea id="ritualSteps" rows="4" placeholder="每行写一步，例如：清理桌面"></textarea>
+          </label>
+          <button class="primary-cta" type="submit">加入仪式专区 <span>+</span></button>
+        </form>
+
+        <article class="custom-preview" id="customPreview" hidden>
+          <img id="customPreviewImage" alt="自定义配方照片预览" />
+          <div>
+            <span>我的上传</span>
+            <h3 id="customPreviewTitle"></h3>
+            <p id="customPreviewText"></p>
+            <small id="customPreviewSource"></small>
+            <button type="button" id="useCustomRecipe">设为首页展示</button>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>
