@@ -1,0 +1,81 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+locale: "zh_Hans"
+
+collections:
+  - name: "site_content"
+    label: "网站内容"
+    files:
+      - name: "content"
+        label: "草药、仪式与配方"
+        file: "data/content.json"
+        fields:
+          - label: "草药档案"
+            name: "herbs"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "名称", name: "title", widget: "string" }
+              - { label: "关键词", name: "text", widget: "string" }
+              - { label: "说明", name: "detail", widget: "text", required: false }
+              - { label: "颜色", name: "color", widget: "select", options: ["sage", "violet", "gold", "blue", "custom"], default: "custom" }
+              - label: "资料来源"
+                name: "sources"
+                widget: "list"
+                required: false
+                fields:
+                  - { label: "来源名称", name: "title", widget: "string" }
+                  - { label: "类型", name: "type", widget: "string", required: false }
+                  - { label: "链接或页码", name: "link", widget: "string", required: false }
+          - label: "仪式专区"
+            name: "rituals"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "名称", name: "title", widget: "string" }
+              - { label: "适合时间", name: "timing", widget: "string" }
+              - { label: "目标", name: "intention", widget: "text" }
+              - { label: "准备物品", name: "tools", widget: "list", field: { label: "物品", name: "tool", widget: "string" } }
+              - { label: "步骤", name: "steps", widget: "list", field: { label: "步骤", name: "step", widget: "string" } }
+              - label: "资料来源"
+                name: "sources"
+                widget: "list"
+                required: false
+                fields:
+                  - { label: "来源名称", name: "title", widget: "string" }
+                  - { label: "类型", name: "type", widget: "string", required: false }
+                  - { label: "链接或页码", name: "link", widget: "string", required: false }
+          - label: "配方手记"
+            name: "recipes"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "名称", name: "title", widget: "string" }
+              - { label: "评分", name: "rating", widget: "string", default: "5.00" }
+              - { label: "用途一句话", name: "use", widget: "string" }
+              - { label: "调和度", name: "meter", widget: "string", default: "90%" }
+              - { label: "标签", name: "tags", widget: "list", field: { label: "标签", name: "tag", widget: "string" } }
+              - { label: "说明", name: "detail", widget: "text" }
+              - { label: "步骤", name: "steps", widget: "list", field: { label: "步骤", name: "step", widget: "string" } }
+              - { label: "图片", name: "imageUrl", widget: "image", required: false, default: "./assets/hero-herbs.png" }
+              - label: "资料来源"
+                name: "sources"
+                widget: "list"
+                required: false
+                fields:
+                  - { label: "来源名称", name: "title", widget: "string" }
+                  - { label: "类型", name: "type", widget: "string", required: false }
+                  - { label: "链接或页码", name: "link", widget: "string", required: false }
+          - label: "默认资料来源"
+            name: "sources"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - { label: "来源名称", name: "title", widget: "string" }
+              - { label: "类型", name: "type", widget: "string" }
+              - { label: "链接或页码", name: "link", widget: "string", required: false }
