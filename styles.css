@@ -941,7 +941,7 @@ button {
 
 .herb-list {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -1000,6 +1000,21 @@ button {
   color: rgba(25, 23, 35, 0.58);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.herb-attributes {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.herb-attributes small {
+  margin: 0;
+}
+
+.herb-attributes strong {
+  color: var(--ink);
+  font-weight: 900;
 }
 
 .recipe-panel {

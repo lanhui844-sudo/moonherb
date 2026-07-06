@@ -301,6 +301,22 @@ function createSearchHaystack(parts) {
   return normalizeSearchText(parts.flat().filter(Boolean).join(" "));
 }
 
+function getHerbKeywords(herb) {
+  return herb.keywords || herb.text || "";
+}
+
+function getHerbDetailRows(herb) {
+  return [
+    ["阴阳属性", herb.yinYang],
+    ["行星属性", herb.planet],
+    ["元素属性", herb.element],
+    ["神祗属性", herb.deity],
+    ["关键词", herb.keywords || herb.text],
+    ["仪式用途", herb.ritualUse],
+    ["魔法用途", herb.magicUse || herb.detail],
+  ].filter(([, value]) => value);
+}
+
 function collectSearchItems(scope = searchScope) {
   const favoriteItems = favorites.map((favorite, index) => ({
     type: "收藏",
@@ -317,10 +333,21 @@ function collectSearchItems(scope = searchScope) {
     ...herbs.map((herb, index) => ({
       type: "草药",
       title: herb.title,
-      text: herb.text || herb.detail || "草药档案",
+      text: getHerbKeywords(herb) || herb.magicUse || herb.ritualUse || herb.detail || "草药档案",
       action: "library",
       index,
-      haystack: createSearchHaystack([herb.title, herb.text, herb.detail]),
+      haystack: createSearchHaystack([
+        herb.title,
+        herb.text,
+        herb.detail,
+        herb.keywords,
+        herb.yinYang,
+        herb.planet,
+        herb.element,
+        herb.deity,
+        herb.ritualUse,
+        herb.magicUse,
+      ]),
     })),
     ...rituals.map((ritual, index) => ({
       type: "仪式",
@@ -538,8 +565,12 @@ function renderHerbs() {
         <article>
           <span class="herb-dot ${herb.color}"></span>
           <h3>${herb.title}</h3>
-          <p>${herb.text}</p>
-          ${herb.detail ? `<small>${herb.detail}</small>` : ""}
+          <p>${getHerbKeywords(herb)}</p>
+          <div class="herb-attributes">
+            ${getHerbDetailRows(herb)
+              .map(([label, value]) => `<small><strong>${label}：</strong>${value}</small>`)
+              .join("")}
+          </div>
           ${herb.sources?.length ? `<small>来源：${herb.sources.map((source) => source.title).join("、")}</small>` : ""}
           <div class="card-actions">
             <button class="delete-button" type="button" data-delete-herb="${index}">删除</button>
