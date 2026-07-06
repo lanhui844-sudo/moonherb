@@ -35,7 +35,9 @@
             今日调配
           </button>
           <button class="nav-link" type="button" data-view="library" data-nav-view="library">草药档案</button>
+          <button class="nav-link" type="button" data-view="rituals" data-nav-view="rituals">仪式专区</button>
           <button class="nav-link" type="button" data-view="recipes" data-nav-view="recipes">配方手记</button>
+          <button class="nav-link" type="button" data-view="favorites" data-nav-view="favorites">收藏档案</button>
         </nav>
 
         <nav class="nav-card nav-right" aria-label="工具">
@@ -50,12 +52,17 @@
         </nav>
       </header>
 
-      <div class="command-panel" id="commandPanel" hidden>
-        <button type="button" data-view="library">草药档案</button>
-        <button type="button" data-view="rituals">仪式专区</button>
-        <button type="button" data-view="recipes">配方手记</button>
-        <button type="button" data-view="favorites">收藏档案</button>
-        <button type="button" data-view="upload">上传配方</button>
+      <div class="command-panel search-dock" id="commandPanel" hidden>
+        <div class="search-scope" role="group" aria-label="搜索范围">
+          <button class="active" type="button" data-search-scope="all">全部内容</button>
+          <button type="button" data-search-scope="favorites">收藏</button>
+        </div>
+        <label class="global-search" for="globalSearchInput">
+          <span>搜索</span>
+          <input id="globalSearchInput" type="text" placeholder="输入草药、仪式、配方或收藏..." />
+        </label>
+        <button class="search-submit" id="globalSearchButton" type="button">搜索</button>
+        <div class="search-results" id="searchResults" aria-live="polite"></div>
       </div>
 
       <section class="hero-grid page-view" id="homePage" data-page="home" aria-label="月草工坊总览首页">
