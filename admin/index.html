@@ -443,10 +443,16 @@
           formFields.innerHTML = `
             <div class="grid">
               <label>名称<input name="title" placeholder="例如：月光薄荷" required /></label>
-              <label>关键词<input name="text" placeholder="清醒、降温、专注" required /></label>
+              <label>阴阳属性<input name="yinYang" placeholder="例如：阳性 / 阴性 / 中性" /></label>
             </div>
-            <label>说明<textarea name="detail" placeholder="写下气味、适合场景或使用观察"></textarea></label>
-            <label>颜色<select name="color"><option value="custom">月绿色</option><option value="sage">鼠尾草绿</option><option value="violet">薰衣草紫</option><option value="gold">月桂金</option><option value="blue">艾草蓝</option></select></label>
+            <div class="grid">
+              <label>行星属性<input name="planet" placeholder="例如：太阳、月亮、水星" /></label>
+              <label>元素属性<input name="element" placeholder="例如：火、水、风、土" /></label>
+            </div>
+            <label>神祗属性<input name="deity" placeholder="例如：阿波罗、赫卡忒、阿佛洛狄忒" /></label>
+            <label>关键词<input name="keywords" placeholder="清场、保护、专注、疗愈" required /></label>
+            <label>仪式用途<textarea name="ritualUse" placeholder="适合放进哪些仪式、什么时候使用"></textarea></label>
+            <label>魔法用途<textarea name="magicUse" placeholder="写下对应的魔法用途、象征含义或搭配方向"></textarea></label>
           `;
         }
 
@@ -480,7 +486,7 @@
       }
 
       function getEntrySummary(entry) {
-        if (currentSection === "herbs") return entry.text || entry.detail || "未填写关键词";
+        if (currentSection === "herbs") return entry.keywords || entry.text || entry.magicUse || entry.detail || "未填写关键词";
         if (currentSection === "rituals") return `${entry.timing || "自选时间"} · ${entry.intention || "未填写目标"}`;
         return `${entry.rating || "5.00"} · ${entry.use || "未填写用途"}`;
       }
@@ -522,9 +528,16 @@
         if (currentSection === "herbs") {
           return {
             title: formData.get("title").trim(),
-            text: formData.get("text").trim(),
-            detail: formData.get("detail").trim(),
-            color: formData.get("color") || "custom",
+            yinYang: formData.get("yinYang").trim(),
+            planet: formData.get("planet").trim(),
+            element: formData.get("element").trim(),
+            deity: formData.get("deity").trim(),
+            keywords: formData.get("keywords").trim(),
+            ritualUse: formData.get("ritualUse").trim(),
+            magicUse: formData.get("magicUse").trim(),
+            text: formData.get("keywords").trim(),
+            detail: formData.get("magicUse").trim() || formData.get("ritualUse").trim(),
+            color: "custom",
             sources: [],
           };
         }
