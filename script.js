@@ -305,16 +305,16 @@ function applyReadOnlyMode() {
 
 function applyManagedContent(content) {
   if (!content || typeof content !== "object") return;
-  if (Array.isArray(content.recipes) && content.recipes.length) {
+  if (Array.isArray(content.recipes)) {
     recipes.splice(0, recipes.length, ...content.recipes);
   }
-  if (Array.isArray(content.rituals) && content.rituals.length) {
+  if (Array.isArray(content.rituals)) {
     rituals.splice(0, rituals.length, ...content.rituals);
   }
-  if (Array.isArray(content.herbs) && content.herbs.length) {
+  if (Array.isArray(content.herbs)) {
     herbs = content.herbs;
   }
-  if (Array.isArray(content.sources) && content.sources.length) {
+  if (Array.isArray(content.sources)) {
     sources = content.sources;
   }
 }
@@ -361,6 +361,10 @@ function renderRecipe(index) {
 }
 
 function renderSources() {
+  if (!sources.length) {
+    sourceList.innerHTML = "";
+    return;
+  }
   sourceList.innerHTML = sources
     .map(
       (source, index) => `
@@ -376,6 +380,16 @@ function renderSources() {
 }
 
 function renderHerbs() {
+  if (!herbs.length) {
+    herbList.innerHTML = `
+      <article>
+        <span class="herb-dot custom"></span>
+        <h3>暂无草药</h3>
+        <p>你可以在后台添加自己的第一条草药档案。</p>
+      </article>
+    `;
+    return;
+  }
   herbList.innerHTML = herbs
     .map(
       (herb, index) => `
@@ -395,6 +409,19 @@ function renderHerbs() {
 }
 
 function renderRituals() {
+  if (!rituals.length) {
+    ritualList.innerHTML = `
+      <article class="ritual-card">
+        <div class="ritual-card-top">
+          <span>等待添加</span>
+        </div>
+        <h3>暂无仪式</h3>
+        <p>你可以在后台添加自己的第一条仪式流程。</p>
+        <div class="ritual-tools"><span>自定义</span></div>
+      </article>
+    `;
+    return;
+  }
   ritualList.innerHTML = rituals
     .map(
       (ritual, index) => `
@@ -429,6 +456,10 @@ function addCustomRecipe(recipe) {
 
 document.querySelectorAll("[data-step]").forEach((button) => {
   button.addEventListener("click", () => {
+    if (!recipes.length) {
+      showToast("还没有配方，先在后台添加一条。");
+      return;
+    }
     const step = Number(button.dataset.step);
     currentRecipe = (currentRecipe + step + recipes.length) % recipes.length;
     renderRecipe(currentRecipe);
