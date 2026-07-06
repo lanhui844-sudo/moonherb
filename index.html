@@ -54,6 +54,7 @@
         <button type="button" data-view="library">草药档案</button>
         <button type="button" data-view="rituals">仪式专区</button>
         <button type="button" data-view="recipes">配方手记</button>
+        <button type="button" data-view="favorites">收藏档案</button>
         <button type="button" data-view="upload">上传配方</button>
       </div>
 
@@ -67,7 +68,7 @@
 
           <div class="feature-top">
             <p><span class="red-spark"></span>月草工坊</p>
-            <div class="counter home-counter"><strong>04</strong> 个入口</div>
+            <div class="counter home-counter"><strong>05</strong> 个入口</div>
           </div>
 
           <div class="home-feature-copy">
@@ -91,6 +92,10 @@
             <button type="button" data-view="upload">
               <span>04</span>
               自定义上传
+            </button>
+            <button type="button" data-view="favorites">
+              <span>05</span>
+              收藏档案
             </button>
           </div>
         </article>
@@ -142,6 +147,11 @@
           <span>Studio</span>
           <h2>自定义上传</h2>
           <p>上传图片，创建你自己的草药或仪式记录。</p>
+        </article>
+        <article data-view="favorites">
+          <span>Saved</span>
+          <h2>收藏档案</h2>
+          <p>每位访客都可以保存自己的配方收藏，不需要登录。</p>
         </article>
       </section>
 
@@ -220,6 +230,18 @@
           <li>按从浓到淡的气味顺序加入草药。</li>
           <li>放在门口、书桌或床头，保留 3 晚即可。</li>
         </ol>
+      </section>
+
+      <section class="favorites-panel page-view" id="favorites" data-page="favorites" aria-label="收藏档案" hidden>
+        <button class="back-home" type="button" data-view="home">返回总入口</button>
+        <div class="ritual-head">
+          <div>
+            <h2>收藏档案</h2>
+            <p>这里保存的是当前浏览器里的个人收藏。别人打开网站，会看到他们自己的收藏。</p>
+          </div>
+          <button type="button" class="outline-cta compact-cta" id="clearFavoritesButton">清空收藏</button>
+        </div>
+        <div class="favorite-list" id="favoriteList"></div>
       </section>
 
       <p class="status-toast" id="statusToast" role="status" aria-live="polite" hidden></p>

@@ -194,7 +194,8 @@ let herbs = [
 let currentRecipe = 0;
 let uploadedImageUrl = "";
 let latestCustomRecipe = null;
-let bookmarked = false;
+const favoritesStorageKey = "moonherbFavorites";
+let favorites = [];
 let toastTimer = 0;
 let sources = [
   { title: "个人草药观察笔记", type: "个人笔记", link: "2026 春夏记录" },
@@ -245,6 +246,8 @@ const sourceList = document.querySelector("#sourceList");
 const moonDateText = document.querySelector("#moonDateText");
 const moonPhaseText = document.querySelector("#moonPhaseText");
 const moonNextText = document.querySelector("#moonNextText");
+const favoriteList = document.querySelector("#favoriteList");
+const clearFavoritesButton = document.querySelector("#clearFavoritesButton");
 
 function showToast(message) {
   statusToast.textContent = message;
@@ -253,6 +256,36 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => {
     statusToast.hidden = true;
   }, 2600);
+}
+
+function getRecipeKey(recipe) {
+  if (!recipe) return "";
+  return [recipe.title, recipe.use, recipe.detail].join("|");
+}
+
+function loadFavorites() {
+  try {
+    const storedFavorites = JSON.parse(localStorage.getItem(favoritesStorageKey) || "[]");
+    favorites = Array.isArray(storedFavorites) ? storedFavorites : [];
+  } catch (error) {
+    favorites = [];
+  }
+}
+
+function saveFavorites() {
+  localStorage.setItem(favoritesStorageKey, JSON.stringify(favorites));
+}
+
+function isRecipeFavorited(recipe) {
+  const recipeKey = getRecipeKey(recipe);
+  return Boolean(recipeKey && favorites.some((favorite) => favorite.key === recipeKey));
+}
+
+function updateBookmarkState() {
+  const recipe = recipes[currentRecipe];
+  const isFavorited = isRecipeFavorited(recipe);
+  bookmarkButton.classList.toggle("is-active", isFavorited);
+  bookmarkButton.setAttribute("aria-pressed", String(isFavorited));
 }
 
 function scrollToSection(selector) {
@@ -341,6 +374,7 @@ function renderRecipe(index) {
     tagRow.innerHTML = "";
     stepsList.innerHTML = "";
     heroImage.src = defaultHeroImage;
+    updateBookmarkState();
     return;
   }
   currentRecipe = Math.max(0, Math.min(index, recipes.length - 1));
@@ -358,6 +392,7 @@ function renderRecipe(index) {
   }
   heroImage.src = recipe.imageUrl || defaultHeroImage;
   heroImage.alt = recipe.isCustom ? `${recipe.title}的自定义配方照片` : "草药、玻璃瓶、月相纸张和仪式器皿组成的现代草药工作台";
+  updateBookmarkState();
 }
 
 function renderSources() {
@@ -437,6 +472,36 @@ function renderRituals() {
           <ol>${ritual.steps.map((step) => `<li>${step}</li>`).join("")}</ol>
           <div class="card-actions">
             <button class="delete-button" type="button" data-delete-ritual="${index}">删除</button>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+}
+
+function renderFavorites() {
+  if (!favorites.length) {
+    favoriteList.innerHTML = `
+      <article class="favorite-card">
+        <span class="favorite-meta">等待收藏</span>
+        <h3>暂无收藏</h3>
+        <p>在配方手记里点右上角书签，就会把喜欢的配方保存到这里。</p>
+        <div class="tag-row"><span>个人收藏</span></div>
+      </article>
+    `;
+    return;
+  }
+
+  favoriteList.innerHTML = favorites
+    .map(
+      (favorite, index) => `
+        <article class="favorite-card">
+          <span class="favorite-meta">收藏配方</span>
+          <h3>${favorite.title}</h3>
+          <p>${favorite.use || favorite.detail || "已保存到你的收藏档案。"}</p>
+          <div class="tag-row">${(favorite.tags || []).map((tag) => `<span>${tag}</span>`).join("")}</div>
+          <div class="card-actions">
+            <button class="delete-button" type="button" data-delete-favorite="${index}">删除收藏</button>
           </div>
         </article>
       `,
@@ -546,10 +611,49 @@ document.querySelectorAll("[data-view]").forEach((entry) => {
 });
 
 bookmarkButton.addEventListener("click", () => {
-  bookmarked = toggleValue(bookmarked);
-  bookmarkButton.classList.toggle("is-active", bookmarked);
-  bookmarkButton.setAttribute("aria-pressed", String(bookmarked));
-  showToast(bookmarked ? `已收藏「${recipes[currentRecipe].title}」。` : "已取消收藏。");
+  const recipe = recipes[currentRecipe];
+  if (!recipe) {
+    showToast("还没有可收藏的配方。");
+    return;
+  }
+
+  const recipeKey = getRecipeKey(recipe);
+  const existingIndex = favorites.findIndex((favorite) => favorite.key === recipeKey);
+  if (existingIndex >= 0) {
+    favorites.splice(existingIndex, 1);
+    showToast(`已取消收藏「${recipe.title}」。`);
+  } else {
+    favorites.unshift({
+      key: recipeKey,
+      title: recipe.title,
+      use: recipe.use,
+      detail: recipe.detail,
+      tags: recipe.tags || [],
+    });
+    showToast(`已收藏「${recipe.title}」。`);
+  }
+
+  saveFavorites();
+  renderFavorites();
+  updateBookmarkState();
+});
+
+favoriteList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-delete-favorite]");
+  if (!button) return;
+  const deleted = favorites.splice(Number(button.dataset.deleteFavorite), 1)[0];
+  saveFavorites();
+  renderFavorites();
+  updateBookmarkState();
+  showToast(deleted ? `已删除收藏「${deleted.title}」。` : "已删除收藏。");
+});
+
+clearFavoritesButton.addEventListener("click", () => {
+  favorites = [];
+  saveFavorites();
+  renderFavorites();
+  updateBookmarkState();
+  showToast("收藏档案已清空。");
 });
 
 expandSearchButton.addEventListener("click", () => {
@@ -674,10 +778,12 @@ customRitualForm.addEventListener("submit", (event) => {
 
 async function initializeApp() {
   await loadManagedContent();
+  loadFavorites();
   renderRecipe(currentRecipe);
   renderHerbs();
   renderRituals();
   renderSources();
+  renderFavorites();
   updateMoonLock();
   applyReadOnlyMode();
 }
