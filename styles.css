@@ -193,6 +193,15 @@ button {
   font-weight: 700;
 }
 
+.nav-link.active {
+  min-width: 112px;
+  height: 28px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: white;
+  font-weight: 800;
+}
+
 .nav-pill span {
   width: 8px;
   height: 8px;

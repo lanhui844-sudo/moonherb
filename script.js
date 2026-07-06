@@ -260,11 +260,20 @@ function scrollToSection(selector) {
   if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function updateTopNav(pageName) {
+  const activePage = pageName === "overview" ? "home" : pageName;
+  document.querySelectorAll("[data-nav-view]").forEach((entry) => {
+    const isActive = entry.dataset.navView === activePage;
+    entry.classList.toggle("active", isActive);
+  });
+}
+
 function showPage(pageName) {
   if (document.body.classList.contains("read-only") && pageName === "upload") {
     showToast("公开浏览版仅开放查看。");
     pageName = "home";
   }
+  updateTopNav(pageName);
   pageViews.forEach((view) => {
     view.hidden = view.dataset.page !== pageName;
   });
