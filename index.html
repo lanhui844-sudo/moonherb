@@ -3,359 +3,636 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>月草工坊 | 仪式草药配方</title>
+    <title>Moonherb Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+      :root {
+        --bg: #d8ddd7;
+        --panel: #f7f5ef;
+        --ink: #191723;
+        --muted: #77766f;
+        --line: rgba(25, 23, 35, 0.13);
+        --sage: #b9ddb3;
+        --sage-dark: #54745c;
+        --lavender: #a996e8;
+        --gold: #c9a75f;
+        --shadow: 0 24px 70px rgba(48, 54, 50, 0.17);
+        --font: "Noto Serif SC", "STKaiti", "KaiTi", "FangSong", serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 86% 10%, rgba(255, 255, 255, 0.42), transparent 22rem),
+          linear-gradient(135deg, #d3d9d4 0%, var(--bg) 48%, #cfd6d1 100%);
+        color: var(--ink);
+        font-family: var(--font);
+        font-weight: 600;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 36px));
+        margin: 0 auto;
+        padding: 34px 0;
+      }
+
+      .topbar,
+      .panel,
+      .editor,
+      .list-card {
+        border: 1px solid rgba(255, 255, 255, 0.66);
+        background: rgba(248, 247, 241, 0.9);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        min-height: 72px;
+        border-radius: 18px;
+        padding: 14px 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .mark {
+        display: grid;
+        width: 42px;
+        height: 42px;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--ink);
+        color: white;
+        font-size: 20px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 28px;
+        font-weight: 900;
+      }
+
+      .brand p,
+      .muted {
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .button {
+        min-height: 40px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--ink);
+        color: white;
+        padding: 0 18px;
+        font-weight: 900;
+      }
+
+      .ghost {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.48);
+        color: var(--ink);
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .panel,
+      .editor {
+        border-radius: 24px;
+        padding: 22px;
+      }
+
+      .tabs {
+        display: grid;
+        gap: 10px;
+      }
+
+      .tab {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 54px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.42);
+        color: var(--ink);
+        padding: 0 14px;
+        text-align: left;
+        font-weight: 900;
+      }
+
+      .tab.active {
+        background: var(--ink);
+        color: white;
+      }
+
+      .editor-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        color: #3e403c;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        background: rgba(255, 255, 255, 0.58);
+        color: var(--ink);
+        outline: 0;
+        padding: 12px 13px;
+      }
+
+      textarea {
+        min-height: 98px;
+        resize: vertical;
+      }
+
+      .form {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .list-card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: none;
+      }
+
+      .list-card strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 17px;
+      }
+
+      .list-card small {
+        color: var(--muted);
+      }
+
+      .delete {
+        min-height: 34px;
+        border: 1px solid rgba(180, 64, 64, 0.18);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.5);
+        color: #934747;
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .status {
+        min-height: 22px;
+        color: var(--sage-dark);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .login-card {
+        max-width: 520px;
+        margin: 90px auto 0;
+        border-radius: 24px;
+        padding: 30px;
+        text-align: center;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 860px) {
+        .workspace {
+          grid-template-columns: 1fr;
+        }
+
+        .grid,
+        .topbar,
+        .editor-head {
+          grid-template-columns: 1fr;
+          display: grid;
+        }
+      }
+    </style>
   </head>
   <body>
-    <aside class="moon-lock" aria-label="今日月相信息">
-      <span id="moonDateText"></span>
-      <strong id="moonPhaseText"></strong>
-      <em id="moonNextText"></em>
-    </aside>
-
-    <main class="app-shell">
-      <header class="topbar" aria-label="主导航">
-        <nav class="nav-card nav-left">
-          <button class="brand" id="homeButton" type="button" aria-label="月草工坊首页">
-            <span class="brand-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="img">
-                <path d="M19.4 4.6c-5.9.5-10.2 3-12.7 7.4-1.4 2.5-1.6 5.1-.5 7.4 2.4.4 5-.2 7.2-1.9 3.9-3 5.6-7.2 6-12.9Z" />
-                <path d="M6.8 18.6c2.5-4 5.4-6.7 8.8-8.1" />
-              </svg>
-            </span>
-          </button>
-          <button class="nav-pill active" id="todayButton" type="button">
-            <span></span>
-            今日调配
-          </button>
-          <button class="nav-link" type="button" data-view="library">草药档案</button>
-          <button class="nav-link" type="button" data-view="recipes">配方手记</button>
-        </nav>
-
-        <nav class="nav-card nav-right" aria-label="工具">
-          <button class="icon-button" id="menuButton" type="button" aria-label="打开目录" aria-expanded="false">
-            <span></span><span></span>
-          </button>
-          <button class="orb-button" id="bookmarkButton" type="button" aria-label="收藏配方" aria-pressed="false">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M7 4.5h10c.6 0 1 .4 1 1v14l-6-3.5-6 3.5v-14c0-.6.4-1 1-1Z" />
-            </svg>
-          </button>
-        </nav>
-      </header>
-
-      <div class="command-panel" id="commandPanel" hidden>
-        <button type="button" data-view="library">草药档案</button>
-        <button type="button" data-view="rituals">仪式专区</button>
-        <button type="button" data-view="recipes">配方手记</button>
-        <button type="button" data-view="upload">上传配方</button>
-      </div>
-
-      <section class="hero-grid page-view" id="homePage" data-page="home" aria-label="月草工坊总览首页">
-        <article class="feature-card home-feature">
-          <img
-            src="./assets/hero-herbs.png"
-            alt="草药、玻璃瓶、月相纸张和仪式器皿组成的现代草药工作台"
-          />
-          <div class="feature-overlay"></div>
-
-          <div class="feature-top">
-            <p><span class="red-spark"></span>月草工坊</p>
-            <div class="counter home-counter"><strong>04</strong> 个入口</div>
+    <main class="shell">
+      <section class="topbar">
+        <div class="brand">
+          <span class="mark">☾</span>
+          <div>
+            <h1>Moonherb Studio</h1>
+            <p>只改内容，不碰代码。保存后会发布到 moonherb.netlify.app。</p>
           </div>
+        </div>
+        <div class="actions">
+          <span class="status" id="statusText">等待登录</span>
+          <button class="button ghost" id="viewSiteButton" type="button">查看网站</button>
+          <button class="button" id="loginButton" type="button">登录后台</button>
+        </div>
+      </section>
 
-          <div class="home-feature-copy">
-            <h1>草药、仪式与配方的总工作台</h1>
-            <p>先从分类进入，再查看具体草药、仪式步骤、配方手记，或上传自己的记录。</p>
+      <section class="panel login-card" id="loginCard">
+        <h2>先登录你的后台账号</h2>
+        <p class="muted">使用你刚才在 Netlify 邮件里设置的邮箱和密码。</p>
+      </section>
+
+      <section class="workspace hidden" id="workspace">
+        <aside class="panel">
+          <div class="tabs">
+            <button class="tab active" type="button" data-section="herbs">草药档案 <span id="herbCount">0</span></button>
+            <button class="tab" type="button" data-section="rituals">仪式专区 <span id="ritualCount">0</span></button>
+            <button class="tab" type="button" data-section="recipes">配方手记 <span id="recipeCount">0</span></button>
           </div>
+        </aside>
 
-          <div class="home-category-grid">
-            <button type="button" data-view="library">
-              <span>01</span>
-              草药档案
-            </button>
-            <button type="button" data-view="rituals">
-              <span>02</span>
-              仪式专区
-            </button>
-            <button type="button" data-view="recipes">
-              <span>03</span>
-              配方手记
-            </button>
-            <button type="button" data-view="upload">
-              <span>04</span>
-              自定义上传
-            </button>
-          </div>
-        </article>
-
-        <aside class="side-stack">
-          <section class="headline-card">
-            <h2>今天从哪里开始？</h2>
-            <p>首页先做导航，不把你直接塞进某个详情页。选一个入口，再进入对应专区。</p>
-            <button class="outline-cta" type="button" id="exploreButton">
-              查看全部分类 <span>›</span>
-            </button>
-            <div class="moon-shape" aria-hidden="true"></div>
-          </section>
-
-          <section class="search-card">
-            <button class="expand-button" id="expandSearchButton" type="button" aria-label="展开筛选">↗</button>
-            <h2>快速查找</h2>
-            <label for="intentInput">输入目标，匹配草药、仪式或配方</label>
-            <input id="intentInput" type="text" placeholder="边界、睡眠、专注、净场..." />
-            <div class="intent-options" aria-label="常用目标">
-              <button type="button" data-intent="边界">边界</button>
-              <button type="button" data-intent="睡眠">睡眠</button>
-              <button type="button" data-intent="净场">净场</button>
+        <section class="editor">
+          <div class="editor-head">
+            <div>
+              <h2 id="sectionTitle">草药档案</h2>
+              <p class="muted" id="sectionHint">新增或删除草药，保存后公开页会同步。</p>
             </div>
-            <button class="primary-cta" type="button" id="searchButton">
-              搜索工作台 <span>⌕</span>
-            </button>
-          </section>
-        </aside>
-      </section>
-
-      <section class="overview-strip page-view" id="overview" data-page="overview" aria-label="分类总览" hidden>
-        <article data-view="library">
-          <span>Herbs</span>
-          <h2>草药档案</h2>
-          <p>按气味、用途、禁忌和搭配关系浏览材料。</p>
-        </article>
-        <article data-view="rituals">
-          <span>Rituals</span>
-          <h2>仪式专区</h2>
-          <p>按时间、场景和目标查看可执行步骤。</p>
-        </article>
-        <article data-view="recipes">
-          <span>Recipes</span>
-          <h2>配方手记</h2>
-          <p>把材料组合成可收藏、可切换的配方卡。</p>
-        </article>
-        <article data-view="upload">
-          <span>Studio</span>
-          <h2>自定义上传</h2>
-          <p>上传图片，创建你自己的草药或仪式记录。</p>
-        </article>
-      </section>
-
-      <section class="library-strip page-view" id="library" data-page="library" aria-label="草药档案" hidden>
-        <button class="back-home" type="button" data-view="home">返回总入口</button>
-        <div class="ritual-head">
-          <div class="section-heading">
-            <h2>草药档案</h2>
-            <p>每一味草药都按气味、适用场景和搭配方式整理，像查笔记一样轻松。</p>
-          </div>
-          <button type="button" class="outline-cta compact-cta" id="newHerbButton">添加草药 <span>+</span></button>
-        </div>
-        <div class="herb-list">
-          <article>
-            <span class="herb-dot sage"></span>
-            <h3>迷迭香</h3>
-            <p>清场、提神、边界感</p>
-          </article>
-          <article>
-            <span class="herb-dot violet"></span>
-            <h3>薰衣草</h3>
-            <p>放松、睡眠、柔化情绪</p>
-          </article>
-          <article>
-            <span class="herb-dot gold"></span>
-            <h3>月桂叶</h3>
-            <p>愿望书写、祝福、收尾</p>
-          </article>
-          <article>
-            <span class="herb-dot blue"></span>
-            <h3>艾草</h3>
-            <p>净场、直觉、换季整理</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="ritual-zone page-view" id="rituals" data-page="rituals" aria-label="仪式专区" hidden>
-        <button class="back-home" type="button" data-view="home">返回总入口</button>
-        <div class="ritual-head">
-          <div>
-            <h2>仪式专区</h2>
-            <p>把草药配方放进具体场景里：什么时候做、准备什么、按什么顺序完成。</p>
-          </div>
-          <button type="button" class="outline-cta compact-cta" id="newRitualButton">添加仪式 <span>+</span></button>
-        </div>
-
-        <div class="ritual-layout">
-          <div class="ritual-list" id="ritualList"></div>
-        </div>
-      </section>
-
-      <section class="recipe-panel page-view" id="recipes" data-page="recipes" aria-live="polite" hidden>
-        <button class="back-home" type="button" data-view="home">返回总入口</button>
-        <div>
-          <div class="recipe-controls inline-controls" aria-label="切换精选配方">
-            <button type="button" class="round-control" data-step="-1" aria-label="上一个配方">‹</button>
-            <span><strong id="recipeIndex">01</strong> /03</span>
-            <button type="button" class="arrow-control" data-step="1" aria-label="下一个配方">→</button>
-          </div>
-          <button class="delete-button recipe-delete" id="deleteRecipeButton" type="button">删除当前配方</button>
-          <h2 id="detailTitle">月窗净场香囊</h2>
-          <p id="detailText">
-            把艾草、迷迭香、薰衣草和一片月桂叶装入棉布袋，放在窗边过一夜。它适合在打扫、换季或重新布置房间之后使用。
-          </p>
-          <div class="recipe-detail-meta">
-            <span>调和度 <strong id="recipeRating">4.86</strong> / 5.00</span>
-            <span id="recipeUse">空间清理后，用来把气味和心绪慢慢收拢。</span>
-          </div>
-          <div class="energy-meter detail-meter"><span id="energyMeter"></span></div>
-          <div class="tag-row detail-tags" id="tagRow">
-            <span>艾草</span><span>迷迭香</span><span>薰衣草</span><span>月桂叶</span>
-          </div>
-        </div>
-        <ol id="stepsList">
-          <li>先写一句这次想清理掉的状态。</li>
-          <li>按从浓到淡的气味顺序加入草药。</li>
-          <li>放在门口、书桌或床头，保留 3 晚即可。</li>
-        </ol>
-      </section>
-
-      <p class="status-toast" id="statusToast" role="status" aria-live="polite" hidden></p>
-
-      <section class="upload-panel page-view" id="upload" data-page="upload" hidden>
-        <button class="back-home" type="button" data-view="home">返回总入口</button>
-        <div class="upload-copy">
-          <h2>自定义工作台</h2>
-          <p>在这里添加自己的草药档案、草药配方或仪式流程，新增内容会进入对应专区。</p>
-        </div>
-
-        <div class="custom-tabs" role="tablist" aria-label="自定义类型">
-          <button class="active" type="button" data-custom-tab="herbProfile" role="tab" aria-selected="true">草药档案</button>
-          <button type="button" data-custom-tab="herb" role="tab" aria-selected="false">草药配方</button>
-          <button type="button" data-custom-tab="ritual" role="tab" aria-selected="false">仪式流程</button>
-        </div>
-
-        <aside class="source-panel" aria-label="资料来源">
-          <div>
-            <h3>资料来源</h3>
-            <p>记录参考书、网站、课程或自己的观察，之后会跟随新增内容一起显示。</p>
-          </div>
-          <label>
-            来源名称
-            <input id="sourceTitle" type="text" placeholder="例如：草药魔法手记" />
-          </label>
-          <div class="field-grid">
-            <label>
-              类型
-              <input id="sourceType" type="text" placeholder="书籍 / 网站 / 个人笔记" />
-            </label>
-            <label>
-              链接或页码
-              <input id="sourceLink" type="text" placeholder="URL / p.42 / 课堂记录" />
-            </label>
-          </div>
-          <button class="source-add" id="addSourceButton" type="button">添加来源</button>
-          <div class="source-list" id="sourceList"></div>
-        </aside>
-
-        <form class="ritual-form custom-tab-panel" id="customHerbForm" data-custom-panel="herbProfile">
-          <h3>自定义草药</h3>
-          <label>
-            草药名称
-            <input id="herbTitle" type="text" placeholder="例如：月光薄荷" />
-          </label>
-          <label>
-            关键词
-            <input id="herbUsage" type="text" placeholder="清醒、降温、专注" />
-          </label>
-          <label>
-            观察说明
-            <textarea id="herbNote" rows="4" placeholder="写下气味、适合场景、禁忌或自己的使用观察。"></textarea>
-          </label>
-          <button class="primary-cta" type="submit">加入草药档案 <span>+</span></button>
-        </form>
-
-        <form class="upload-form custom-tab-panel" id="customRecipeForm" data-custom-panel="herb" hidden>
-          <label class="upload-drop" for="recipeImage">
-            <input id="recipeImage" name="recipeImage" type="file" accept="image/*" />
-            <span class="upload-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 5v10" />
-                <path d="m8 9 4-4 4 4" />
-                <path d="M5 15v3.5c0 .8.7 1.5 1.5 1.5h11c.8 0 1.5-.7 1.5-1.5V15" />
-              </svg>
-            </span>
-            <strong>上传配方照片</strong>
-            <small id="uploadFileName">支持草药、香囊、瓶罐或仪式桌面照片</small>
-          </label>
-
-          <div class="field-grid">
-            <label>
-              配方名称
-              <input id="customTitle" type="text" placeholder="例如：清晨专注香囊" />
-            </label>
-            <label>
-              目标状态
-              <input id="customIntent" type="text" placeholder="例如：专注、睡眠、边界" />
-            </label>
+            <button class="button" id="saveButton" type="button">保存并发布</button>
           </div>
 
-          <label>
-            草药材料
-            <input id="customIngredients" type="text" placeholder="迷迭香、薄荷、月桂叶" />
-          </label>
+          <form class="form" id="entryForm">
+            <div id="formFields"></div>
+            <button class="button ghost" type="submit" id="addButton">新增</button>
+          </form>
 
-          <label>
-            使用说明
-            <textarea id="customNote" rows="4" placeholder="写下怎么使用、适合什么时候用、需要避开什么。"></textarea>
-          </label>
-
-          <button class="primary-cta upload-submit" type="submit">生成我的配方卡 <span>+</span></button>
-        </form>
-
-        <form class="ritual-form custom-tab-panel" id="customRitualForm" data-custom-panel="ritual" hidden>
-          <h3>自定义仪式</h3>
-          <label>
-            仪式名称
-            <input id="ritualTitle" type="text" placeholder="例如：周日晚间整理" />
-          </label>
-          <div class="field-grid">
-            <label>
-              适合时间
-              <input id="ritualTiming" type="text" placeholder="新月夜 / 睡前 / 周日" />
-            </label>
-            <label>
-              仪式目标
-              <input id="ritualIntention" type="text" placeholder="安定、收尾、专注" />
-            </label>
-          </div>
-          <label>
-            准备物品
-            <input id="ritualTools" type="text" placeholder="盐碗、薰衣草、笔记本" />
-          </label>
-          <label>
-            步骤
-            <textarea id="ritualSteps" rows="4" placeholder="每行写一步，例如：清理桌面"></textarea>
-          </label>
-          <button class="primary-cta" type="submit">加入仪式专区 <span>+</span></button>
-        </form>
-
-        <article class="custom-preview" id="customPreview" hidden>
-          <img id="customPreviewImage" alt="自定义配方照片预览" />
-          <div>
-            <span>我的上传</span>
-            <h3 id="customPreviewTitle"></h3>
-            <p id="customPreviewText"></p>
-            <small id="customPreviewSource"></small>
-            <button type="button" id="useCustomRecipe">设为首页展示</button>
-          </div>
-        </article>
+          <div class="list" id="entryList"></div>
+        </section>
       </section>
     </main>
 
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-    <script src="./script.js"></script>
+    <script>
+      const contentPath = "/.netlify/git/github/contents/data/content.json";
+      const defaults = { herbs: [], rituals: [], recipes: [], sources: [] };
+      const labels = {
+        herbs: { title: "草药档案", hint: "新增或删除草药，保存后公开页会同步。", add: "新增草药" },
+        rituals: { title: "仪式专区", hint: "新增仪式名称、时间、物品和步骤。", add: "新增仪式" },
+        recipes: { title: "配方手记", hint: "新增配方卡，公开页会进入配方手记。", add: "新增配方" },
+      };
+
+      let currentUser = null;
+      let currentSection = "herbs";
+      let fileSha = "";
+      let content = structuredClone(defaults);
+
+      const loginButton = document.querySelector("#loginButton");
+      const viewSiteButton = document.querySelector("#viewSiteButton");
+      const saveButton = document.querySelector("#saveButton");
+      const loginCard = document.querySelector("#loginCard");
+      const workspace = document.querySelector("#workspace");
+      const statusText = document.querySelector("#statusText");
+      const tabs = document.querySelectorAll("[data-section]");
+      const sectionTitle = document.querySelector("#sectionTitle");
+      const sectionHint = document.querySelector("#sectionHint");
+      const addButton = document.querySelector("#addButton");
+      const entryForm = document.querySelector("#entryForm");
+      const formFields = document.querySelector("#formFields");
+      const entryList = document.querySelector("#entryList");
+
+      function setStatus(message) {
+        statusText.textContent = message;
+      }
+
+      function encodeBase64(value) {
+        return btoa(unescape(encodeURIComponent(value)));
+      }
+
+      function decodeBase64(value) {
+        return decodeURIComponent(escape(atob(value.replace(/\n/g, ""))));
+      }
+
+      async function getToken() {
+        if (!currentUser) throw new Error("请先登录。");
+        return currentUser.jwt();
+      }
+
+      async function requestGitGateway(path, options = {}) {
+        const token = await getToken();
+        return fetch(path, {
+          ...options,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
+        });
+      }
+
+      function normalizeContent(raw) {
+        return {
+          herbs: Array.isArray(raw.herbs) ? raw.herbs : [],
+          rituals: Array.isArray(raw.rituals) ? raw.rituals : [],
+          recipes: Array.isArray(raw.recipes) ? raw.recipes : [],
+          sources: Array.isArray(raw.sources) ? raw.sources : [],
+        };
+      }
+
+      async function loadContent() {
+        setStatus("正在读取内容...");
+        const response = await requestGitGateway(contentPath);
+        if (!response.ok) throw new Error("读取失败，请确认 Git Gateway 已开启。");
+        const file = await response.json();
+        fileSha = file.sha;
+        content = normalizeContent(JSON.parse(decodeBase64(file.content)));
+        render();
+        setStatus("内容已载入");
+      }
+
+      async function saveContent() {
+        setStatus("正在保存...");
+        const body = {
+          message: "Update moonherb content from studio",
+          content: encodeBase64(JSON.stringify(content, null, 2)),
+          sha: fileSha,
+          branch: "main",
+        };
+        const response = await requestGitGateway(contentPath, {
+          method: "PUT",
+          body: JSON.stringify(body),
+        });
+        if (!response.ok) throw new Error("保存失败，请稍后再试。");
+        const result = await response.json();
+        fileSha = result.content.sha;
+        setStatus("已保存，Netlify 正在自动发布");
+      }
+
+      function splitList(value) {
+        return value
+          .split(/[,\n、/，]/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+
+      function renderForm() {
+        if (currentSection === "herbs") {
+          formFields.innerHTML = `
+            <div class="grid">
+              <label>名称<input name="title" placeholder="例如：月光薄荷" required /></label>
+              <label>关键词<input name="text" placeholder="清醒、降温、专注" required /></label>
+            </div>
+            <label>说明<textarea name="detail" placeholder="写下气味、适合场景或使用观察"></textarea></label>
+            <label>颜色<select name="color"><option value="custom">月绿色</option><option value="sage">鼠尾草绿</option><option value="violet">薰衣草紫</option><option value="gold">月桂金</option><option value="blue">艾草蓝</option></select></label>
+          `;
+        }
+
+        if (currentSection === "rituals") {
+          formFields.innerHTML = `
+            <div class="grid">
+              <label>名称<input name="title" placeholder="例如：清晨净场" required /></label>
+              <label>适合时间<input name="timing" placeholder="新月夜 / 睡前 / 周日" required /></label>
+            </div>
+            <label>目标<textarea name="intention" placeholder="这个仪式想帮你完成什么"></textarea></label>
+            <label>准备物品<input name="tools" placeholder="盐碗、薰衣草、笔记本" /></label>
+            <label>步骤<textarea name="steps" placeholder="每行写一步"></textarea></label>
+          `;
+        }
+
+        if (currentSection === "recipes") {
+          formFields.innerHTML = `
+            <div class="grid">
+              <label>名称<input name="title" placeholder="例如：清晨专注香囊" required /></label>
+              <label>用途<input name="use" placeholder="适合什么时候使用" required /></label>
+            </div>
+            <div class="grid">
+              <label>评分<input name="rating" value="5.00" /></label>
+              <label>调和度<input name="meter" value="90%" /></label>
+            </div>
+            <label>标签<input name="tags" placeholder="迷迭香、薄荷、月桂叶" /></label>
+            <label>说明<textarea name="detail" placeholder="写下配方说明"></textarea></label>
+            <label>步骤<textarea name="steps" placeholder="每行写一步"></textarea></label>
+          `;
+        }
+      }
+
+      function getEntrySummary(entry) {
+        if (currentSection === "herbs") return entry.text || entry.detail || "未填写关键词";
+        if (currentSection === "rituals") return `${entry.timing || "自选时间"} · ${entry.intention || "未填写目标"}`;
+        return `${entry.rating || "5.00"} · ${entry.use || "未填写用途"}`;
+      }
+
+      function renderList() {
+        const items = content[currentSection] || [];
+        entryList.innerHTML = items
+          .map(
+            (entry, index) => `
+              <article class="list-card">
+                <div>
+                  <strong>${entry.title || "未命名"}</strong>
+                  <small>${getEntrySummary(entry)}</small>
+                </div>
+                <button class="delete" type="button" data-delete="${index}">删除</button>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
+      function renderCounts() {
+        document.querySelector("#herbCount").textContent = content.herbs.length;
+        document.querySelector("#ritualCount").textContent = content.rituals.length;
+        document.querySelector("#recipeCount").textContent = content.recipes.length;
+      }
+
+      function render() {
+        sectionTitle.textContent = labels[currentSection].title;
+        sectionHint.textContent = labels[currentSection].hint;
+        addButton.textContent = labels[currentSection].add;
+        tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.section === currentSection));
+        renderForm();
+        renderList();
+        renderCounts();
+      }
+
+      function createEntry(formData) {
+        if (currentSection === "herbs") {
+          return {
+            title: formData.get("title").trim(),
+            text: formData.get("text").trim(),
+            detail: formData.get("detail").trim(),
+            color: formData.get("color") || "custom",
+            sources: [],
+          };
+        }
+
+        if (currentSection === "rituals") {
+          return {
+            title: formData.get("title").trim(),
+            timing: formData.get("timing").trim(),
+            intention: formData.get("intention").trim(),
+            tools: splitList(formData.get("tools") || ""),
+            steps: splitList(formData.get("steps") || ""),
+            sources: [],
+          };
+        }
+
+        return {
+          title: formData.get("title").trim(),
+          rating: formData.get("rating").trim() || "5.00",
+          use: formData.get("use").trim(),
+          meter: formData.get("meter").trim() || "90%",
+          tags: splitList(formData.get("tags") || ""),
+          detail: formData.get("detail").trim(),
+          steps: splitList(formData.get("steps") || ""),
+          imageUrl: "./assets/hero-herbs.png",
+          sources: [],
+        };
+      }
+
+      loginButton.addEventListener("click", () => {
+        if (currentUser) {
+          netlifyIdentity.logout();
+          return;
+        }
+        netlifyIdentity.open("login");
+      });
+
+      viewSiteButton.addEventListener("click", () => {
+        location.href = "/";
+      });
+
+      saveButton.addEventListener("click", async () => {
+        try {
+          await saveContent();
+        } catch (error) {
+          setStatus(error.message);
+        }
+      });
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          currentSection = tab.dataset.section;
+          render();
+        });
+      });
+
+      entryForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const entry = createEntry(new FormData(entryForm));
+        content[currentSection].unshift(entry);
+        entryForm.reset();
+        render();
+        setStatus("已添加，记得点保存并发布");
+      });
+
+      entryList.addEventListener("click", (event) => {
+        const button = event.target.closest("[data-delete]");
+        if (!button) return;
+        content[currentSection].splice(Number(button.dataset.delete), 1);
+        render();
+        setStatus("已删除，记得点保存并发布");
+      });
+
+      netlifyIdentity.on("init", async (user) => {
+        currentUser = user;
+        if (!currentUser) return;
+        loginButton.textContent = "退出";
+        loginCard.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        try {
+          await loadContent();
+        } catch (error) {
+          setStatus(error.message);
+        }
+      });
+
+      netlifyIdentity.on("login", async (user) => {
+        currentUser = user;
+        netlifyIdentity.close();
+        loginButton.textContent = "退出";
+        loginCard.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        try {
+          await loadContent();
+        } catch (error) {
+          setStatus(error.message);
+        }
+      });
+
+      netlifyIdentity.on("logout", () => {
+        currentUser = null;
+        loginButton.textContent = "登录后台";
+        workspace.classList.add("hidden");
+        loginCard.classList.remove("hidden");
+        setStatus("已退出");
+      });
+
+      netlifyIdentity.init();
+      render();
+    </script>
   </body>
 </html>
