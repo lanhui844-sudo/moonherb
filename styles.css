@@ -105,7 +105,7 @@ button {
 .app-shell {
   width: min(1120px, calc(100% - 40px));
   margin: 0 auto;
-  padding: 64px 0 40px;
+  padding: 104px 0 40px;
 }
 
 .topbar {
@@ -1391,7 +1391,7 @@ button {
 @media (max-width: 920px) {
   .app-shell {
     width: min(100% - 28px, 680px);
-    padding-top: 24px;
+    padding-top: 92px;
   }
 
   .topbar,
