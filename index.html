@@ -212,7 +212,7 @@
 
       <section class="recipe-panel page-view" id="recipes" data-page="recipes" aria-live="polite" hidden>
         <button class="back-home" type="button" data-view="home">返回总入口</button>
-        <div>
+        <div class="legacy-recipe-detail" hidden>
           <div class="recipe-controls inline-controls" aria-label="切换精选配方">
             <button type="button" class="round-control" data-step="-1" aria-label="上一个配方">‹</button>
             <span><strong id="recipeIndex">01</strong> /03</span>
@@ -232,11 +232,18 @@
             <span>艾草</span><span>迷迭香</span><span>薰衣草</span><span>月桂叶</span>
           </div>
         </div>
-        <ol id="stepsList">
+        <ol id="stepsList" class="legacy-recipe-detail" hidden>
           <li>先写一句这次想清理掉的状态。</li>
           <li>按从浓到淡的气味顺序加入草药。</li>
           <li>放在门口、书桌或床头，保留 3 晚即可。</li>
         </ol>
+        <div class="ritual-head">
+          <div>
+            <h2>配方手记</h2>
+            <p>每一份配方先收成简洁卡片，点进去再看完整材料、步骤和说明。</p>
+          </div>
+        </div>
+        <div class="recipe-list" id="recipeList"></div>
       </section>
 
       <section class="favorites-panel page-view" id="favorites" data-page="favorites" aria-label="收藏档案" hidden>
@@ -249,6 +256,21 @@
           <button type="button" class="outline-cta compact-cta" id="clearFavoritesButton">清空收藏</button>
         </div>
         <div class="favorite-list" id="favoriteList"></div>
+      </section>
+
+      <section class="detail-page page-view" id="detailPage" data-page="detail" hidden>
+        <button class="back-home" type="button" id="detailBackButton">返回上一级</button>
+        <article class="detail-card">
+          <img class="detail-image" id="detailImage" alt="" />
+          <div class="detail-body">
+            <span class="detail-kicker" id="detailKicker"></span>
+            <h2 id="detailPageTitle"></h2>
+            <p id="detailPageSummary"></p>
+            <div class="detail-attributes" id="detailAttributes"></div>
+            <div class="tag-row detail-tags" id="detailTagRow"></div>
+            <ol id="detailSteps"></ol>
+          </div>
+        </article>
       </section>
 
       <p class="status-toast" id="statusToast" role="status" aria-live="polite" hidden></p>

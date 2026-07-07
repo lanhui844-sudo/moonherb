@@ -248,11 +248,21 @@ const moonPhaseText = document.querySelector("#moonPhaseText");
 const moonNextText = document.querySelector("#moonNextText");
 const favoriteList = document.querySelector("#favoriteList");
 const clearFavoritesButton = document.querySelector("#clearFavoritesButton");
+const recipeList = document.querySelector("#recipeList");
+const detailBackButton = document.querySelector("#detailBackButton");
+const detailImage = document.querySelector("#detailImage");
+const detailKicker = document.querySelector("#detailKicker");
+const detailPageTitle = document.querySelector("#detailPageTitle");
+const detailPageSummary = document.querySelector("#detailPageSummary");
+const detailAttributes = document.querySelector("#detailAttributes");
+const detailTagRow = document.querySelector("#detailTagRow");
+const detailSteps = document.querySelector("#detailSteps");
 const globalSearchInput = document.querySelector("#globalSearchInput");
 const globalSearchButton = document.querySelector("#globalSearchButton");
 const searchResults = document.querySelector("#searchResults");
 const searchScopeButtons = document.querySelectorAll("[data-search-scope]");
 let searchScope = "all";
+let detailReturnPage = "home";
 
 function showToast(message) {
   statusToast.textContent = message;
@@ -315,6 +325,68 @@ function getHerbDetailRows(herb) {
     ["仪式用途", herb.ritualUse],
     ["魔法用途", herb.magicUse || herb.detail],
   ].filter(([, value]) => value);
+}
+
+function getHerbSummaryAttributes(herb) {
+  return [
+    herb.yinYang ? `阴阳：${herb.yinYang}` : "",
+    herb.planet ? `行星：${herb.planet}` : "",
+    herb.element ? `元素：${herb.element}` : "",
+  ].filter(Boolean);
+}
+
+function getItemImage(item) {
+  return item?.imageUrl || defaultHeroImage;
+}
+
+function renderSummaryCard({ type, title, summary, meta = [], imageUrl, action, index, empty = false }) {
+  return `
+    <article class="archive-card ${empty ? "is-empty" : ""}" ${action ? `data-detail-type="${action}" data-detail-index="${index}"` : ""}>
+      <img src="${imageUrl || defaultHeroImage}" alt="${title}" />
+      <div>
+        <span class="archive-type">${type}</span>
+        <h3>${title}</h3>
+        ${summary ? `<p>${summary}</p>` : ""}
+        ${meta.length ? `<div class="archive-meta">${meta.map((item) => `<small>${item}</small>`).join("")}</div>` : ""}
+        ${action ? `<button type="button">查看更多</button>` : ""}
+      </div>
+    </article>
+  `;
+}
+
+function openDetail(type, index) {
+  const collections = { herb: herbs, ritual: rituals, recipe: recipes, favorite: favorites };
+  const item = collections[type]?.[index];
+  if (!item) return;
+
+  detailReturnPage = type === "favorite" ? "favorites" : type === "herb" ? "library" : type === "ritual" ? "rituals" : "recipes";
+  const isHerb = type === "herb";
+  const isRitual = type === "ritual";
+  const isRecipe = type === "recipe" || type === "favorite";
+  if (type === "recipe") {
+    currentRecipe = index;
+    updateBookmarkState();
+  }
+  const attributes = isHerb
+    ? getHerbDetailRows(item)
+    : isRitual
+      ? [["适合时间", item.timing], ["目标", item.intention], ["准备物品", (item.tools || []).join("、")]]
+      : [["用途", item.use], ["调和度", item.rating], ["说明", item.detail]];
+  const tags = isHerb ? parseTags(getHerbKeywords(item)) : isRitual ? item.tools || [] : item.tags || [];
+  const steps = isRitual || isRecipe ? item.steps || [] : [];
+
+  detailImage.src = getItemImage(item);
+  detailImage.alt = item.title || "详情图片";
+  detailKicker.textContent = isHerb ? "草药档案" : isRitual ? "仪式专区" : type === "favorite" ? "收藏档案" : "配方手记";
+  detailPageTitle.textContent = item.title || "未命名";
+  detailPageSummary.textContent = isHerb ? getHerbKeywords(item) : isRitual ? item.intention || "" : item.use || item.detail || "";
+  detailAttributes.innerHTML = attributes
+    .filter(([, value]) => value)
+    .map(([label, value]) => `<section><strong>${label}</strong><p>${value}</p></section>`)
+    .join("");
+  detailTagRow.innerHTML = tags.map((tag) => `<span>${tag}</span>`).join("");
+  detailSteps.innerHTML = steps.map((step) => `<li>${step}</li>`).join("");
+  showPage("detail");
 }
 
 function collectSearchItems(scope = searchScope) {
@@ -415,11 +487,8 @@ function performGlobalSearch() {
 
 function openSearchResult(result) {
   if (!result) return;
-  if (result.action === "recipes") {
-    currentRecipe = result.index;
-    renderRecipe(currentRecipe);
-  }
-  showPage(result.action);
+  const typeMap = { library: "herb", rituals: "ritual", recipes: "recipe", favorites: "favorite" };
+  openDetail(typeMap[result.action] || "recipe", result.index);
 }
 
 function scrollToSection(selector) {
@@ -551,32 +620,22 @@ function renderSources() {
 function renderHerbs() {
   if (!herbs.length) {
     herbList.innerHTML = `
-      <article>
-        <span class="herb-dot custom"></span>
-        <h3>暂无草药</h3>
-        <p>你可以在后台添加自己的第一条草药档案。</p>
-      </article>
+      ${renderSummaryCard({ type: "等待添加", title: "暂无草药", summary: "你可以在后台添加自己的第一条草药档案。", empty: true })}
     `;
     return;
   }
   herbList.innerHTML = herbs
     .map(
-      (herb, index) => `
-        <article>
-          <span class="herb-dot ${herb.color}"></span>
-          <h3>${herb.title}</h3>
-          <p>${getHerbKeywords(herb)}</p>
-          <div class="herb-attributes">
-            ${getHerbDetailRows(herb)
-              .map(([label, value]) => `<small><strong>${label}：</strong>${value}</small>`)
-              .join("")}
-          </div>
-          ${herb.sources?.length ? `<small>来源：${herb.sources.map((source) => source.title).join("、")}</small>` : ""}
-          <div class="card-actions">
-            <button class="delete-button" type="button" data-delete-herb="${index}">删除</button>
-          </div>
-        </article>
-      `,
+      (herb, index) =>
+        renderSummaryCard({
+          type: "草药档案",
+          title: herb.title,
+          summary: getHerbKeywords(herb),
+          meta: getHerbSummaryAttributes(herb),
+          imageUrl: getItemImage(herb),
+          action: "herb",
+          index,
+        }),
     )
     .join("");
 }
@@ -584,35 +643,48 @@ function renderHerbs() {
 function renderRituals() {
   if (!rituals.length) {
     ritualList.innerHTML = `
-      <article class="ritual-card">
-        <div class="ritual-card-top">
-          <span>等待添加</span>
-        </div>
-        <h3>暂无仪式</h3>
-        <p>你可以在后台添加自己的第一条仪式流程。</p>
-        <div class="ritual-tools"><span>自定义</span></div>
-      </article>
+      ${renderSummaryCard({ type: "等待添加", title: "暂无仪式", summary: "你可以在后台添加自己的第一条仪式流程。", empty: true })}
     `;
     return;
   }
   ritualList.innerHTML = rituals
     .map(
-      (ritual, index) => `
-        <article class="ritual-card ${ritual.isCustom ? "custom-ritual" : ""}">
-          <div class="ritual-card-top">
-            <span>${ritual.timing}</span>
-            <button type="button" data-ritual-index="${index}">查看步骤</button>
-          </div>
-          <h3>${ritual.title}</h3>
-          <p>${ritual.intention}</p>
-          ${ritual.sources?.length ? `<small>来源：${ritual.sources.map((source) => source.title).join("、")}</small>` : ""}
-          <div class="ritual-tools">${ritual.tools.map((tool) => `<span>${tool}</span>`).join("")}</div>
-          <ol>${ritual.steps.map((step) => `<li>${step}</li>`).join("")}</ol>
-          <div class="card-actions">
-            <button class="delete-button" type="button" data-delete-ritual="${index}">删除</button>
-          </div>
-        </article>
-      `,
+      (ritual, index) =>
+        renderSummaryCard({
+          type: "仪式专区",
+          title: ritual.title,
+          summary: ritual.intention,
+          meta: [ritual.timing, ...(ritual.tools || []).slice(0, 2)].filter(Boolean),
+          imageUrl: getItemImage(ritual),
+          action: "ritual",
+          index,
+        }),
+    )
+    .join("");
+}
+
+function renderRecipes() {
+  if (!recipes.length) {
+    recipeList.innerHTML = renderSummaryCard({
+      type: "等待添加",
+      title: "还没有配方",
+      summary: "你可以去后台添加第一份草药配方。",
+      empty: true,
+    });
+    return;
+  }
+
+  recipeList.innerHTML = recipes
+    .map((recipe, index) =>
+      renderSummaryCard({
+        type: "配方手记",
+        title: recipe.title,
+        summary: recipe.use || recipe.detail,
+        meta: [recipe.rating ? `调和度 ${recipe.rating}` : "", ...(recipe.tags || []).slice(0, 2)].filter(Boolean),
+        imageUrl: getItemImage(recipe),
+        action: "recipe",
+        index,
+      }),
     )
     .join("");
 }
@@ -620,12 +692,7 @@ function renderRituals() {
 function renderFavorites() {
   if (!favorites.length) {
     favoriteList.innerHTML = `
-      <article class="favorite-card">
-        <span class="favorite-meta">等待收藏</span>
-        <h3>暂无收藏</h3>
-        <p>在配方手记里点右上角书签，就会把喜欢的配方保存到这里。</p>
-        <div class="tag-row"><span>个人收藏</span></div>
-      </article>
+      ${renderSummaryCard({ type: "等待收藏", title: "暂无收藏", summary: "在配方手记详情页点右上角书签，就会把喜欢的配方保存到这里。", empty: true })}
     `;
     if (!commandPanel.hidden && searchScope === "favorites") performGlobalSearch();
     return;
@@ -633,17 +700,16 @@ function renderFavorites() {
 
   favoriteList.innerHTML = favorites
     .map(
-      (favorite, index) => `
-        <article class="favorite-card">
-          <span class="favorite-meta">收藏配方</span>
-          <h3>${favorite.title}</h3>
-          <p>${favorite.use || favorite.detail || "已保存到你的收藏档案。"}</p>
-          <div class="tag-row">${(favorite.tags || []).map((tag) => `<span>${tag}</span>`).join("")}</div>
-          <div class="card-actions">
-            <button class="delete-button" type="button" data-delete-favorite="${index}">删除收藏</button>
-          </div>
-        </article>
-      `,
+      (favorite, index) =>
+        renderSummaryCard({
+          type: "收藏档案",
+          title: favorite.title,
+          summary: favorite.use || favorite.detail || "已保存到你的收藏档案。",
+          meta: (favorite.tags || []).slice(0, 3),
+          imageUrl: getItemImage(favorite),
+          action: "favorite",
+          index,
+        }),
     )
     .join("");
 
@@ -700,15 +766,14 @@ deleteRecipeButton.addEventListener("click", () => {
   recipes.splice(currentRecipe, 1);
   currentRecipe = Math.min(currentRecipe, Math.max(0, recipes.length - 1));
   renderRecipe(currentRecipe);
+  renderRecipes();
   showToast(`已删除配方「${deletedTitle}」。`);
 });
 
 herbList.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-delete-herb]");
-  if (!button) return;
-  herbs = removeAt(herbs, Number(button.dataset.deleteHerb));
-  renderHerbs();
-  showToast("已删除草药条目。");
+  const card = event.target.closest("[data-detail-type]");
+  if (!card) return;
+  openDetail(card.dataset.detailType, Number(card.dataset.detailIndex));
 });
 
 document.querySelectorAll("[data-intent]").forEach((button) => {
@@ -785,6 +850,9 @@ bookmarkButton.addEventListener("click", () => {
       use: recipe.use,
       detail: recipe.detail,
       tags: recipe.tags || [],
+      steps: recipe.steps || [],
+      rating: recipe.rating,
+      imageUrl: recipe.imageUrl || defaultHeroImage,
     });
     showToast(`已收藏「${recipe.title}」。`);
   }
@@ -796,7 +864,11 @@ bookmarkButton.addEventListener("click", () => {
 
 favoriteList.addEventListener("click", (event) => {
   const button = event.target.closest("[data-delete-favorite]");
-  if (!button) return;
+  if (!button) {
+    const card = event.target.closest("[data-detail-type]");
+    if (card) openDetail(card.dataset.detailType, Number(card.dataset.detailIndex));
+    return;
+  }
   const deleted = favorites.splice(Number(button.dataset.deleteFavorite), 1)[0];
   saveFavorites();
   renderFavorites();
@@ -887,26 +959,26 @@ useCustomRecipe.addEventListener("click", () => {
   if (!latestCustomRecipe) return;
   currentRecipe = addCustomRecipe(latestCustomRecipe);
   renderRecipe(currentRecipe);
+  renderRecipes();
   showPage("recipes");
   showToast(`已将「${latestCustomRecipe.title}」加入配方手记。`);
 });
 
 ritualList.addEventListener("click", (event) => {
-  const deleteButton = event.target.closest("[data-delete-ritual]");
-  if (deleteButton) {
-    rituals.splice(Number(deleteButton.dataset.deleteRitual), 1);
-    renderRituals();
-    showToast("已删除仪式。");
-    return;
-  }
-
-  const button = event.target.closest("[data-ritual-index]");
-  if (!button) return;
-  const card = button.closest(".ritual-card");
-  const steps = card.querySelector("ol");
-  const isOpen = steps.classList.toggle("is-open");
-  button.textContent = isOpen ? "收起步骤" : "查看步骤";
+  const card = event.target.closest("[data-detail-type]");
+  if (!card) return;
+  openDetail(card.dataset.detailType, Number(card.dataset.detailIndex));
 });
+
+recipeList.addEventListener("click", (event) => {
+  const card = event.target.closest("[data-detail-type]");
+  if (!card) return;
+  currentRecipe = Number(card.dataset.detailIndex);
+  renderRecipe(currentRecipe);
+  openDetail(card.dataset.detailType, currentRecipe);
+});
+
+detailBackButton.addEventListener("click", () => showPage(detailReturnPage));
 
 newRitualButton.addEventListener("click", () => {
   showPage("upload");
@@ -938,6 +1010,7 @@ async function initializeApp() {
   renderRecipe(currentRecipe);
   renderHerbs();
   renderRituals();
+  renderRecipes();
   renderSources();
   renderFavorites();
   updateMoonLock();
