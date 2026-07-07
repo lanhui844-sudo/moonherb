@@ -253,6 +253,44 @@
         font-weight: 900;
       }
 
+      .row-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .edit {
+        min-height: 34px;
+        border: 1px solid rgba(84, 116, 92, 0.22);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--sage-dark);
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .image-field {
+        border: 1px dashed rgba(84, 116, 92, 0.35);
+        border-radius: 16px;
+        padding: 14px;
+        background: rgba(255, 255, 255, 0.34);
+      }
+
+      .image-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 16px;
+        background: rgba(25, 23, 35, 0.06);
+        object-fit: cover;
+        aspect-ratio: 1 / 1;
+      }
+
       .status {
         min-height: 22px;
         color: var(--sage-dark);
@@ -328,7 +366,10 @@
 
           <form class="form" id="entryForm">
             <div id="formFields"></div>
-            <button class="button ghost" type="submit" id="addButton">新增</button>
+            <div class="form-actions">
+              <button class="button ghost" type="submit" id="addButton">新增</button>
+              <button class="button ghost hidden" type="button" id="cancelEditButton">取消编辑</button>
+            </div>
           </form>
 
           <div class="list" id="entryList"></div>
@@ -340,15 +381,17 @@
       const contentPath = "/.netlify/git/github/contents/data/content.json";
       const defaults = { herbs: [], rituals: [], recipes: [], sources: [] };
       const labels = {
-        herbs: { title: "草药档案", hint: "新增或删除草药，保存后公开页会同步。", add: "新增草药" },
-        rituals: { title: "仪式专区", hint: "新增仪式名称、时间、物品和步骤。", add: "新增仪式" },
-        recipes: { title: "配方手记", hint: "新增配方卡，公开页会进入配方手记。", add: "新增配方" },
+        herbs: { title: "草药档案", hint: "新增、编辑或删除草药，保存后公开页会同步。", add: "新增草药" },
+        rituals: { title: "仪式专区", hint: "新增、编辑仪式名称、时间、物品和步骤。", add: "新增仪式" },
+        recipes: { title: "配方手记", hint: "新增或编辑配方卡，公开页会进入配方手记。", add: "新增配方" },
       };
 
       let currentUser = null;
       let currentSection = "herbs";
       let fileSha = "";
       let content = structuredClone(defaults);
+      let editingIndex = -1;
+      let currentImageData = "";
 
       const loginButton = document.querySelector("#loginButton");
       const viewSiteButton = document.querySelector("#viewSiteButton");
@@ -360,6 +403,7 @@
       const sectionTitle = document.querySelector("#sectionTitle");
       const sectionHint = document.querySelector("#sectionHint");
       const addButton = document.querySelector("#addButton");
+      const cancelEditButton = document.querySelector("#cancelEditButton");
       const entryForm = document.querySelector("#entryForm");
       const formFields = document.querySelector("#formFields");
       const entryList = document.querySelector("#entryList");
@@ -438,6 +482,51 @@
           .filter(Boolean);
       }
 
+      function readSquareImage(file) {
+        if (!file) return Promise.resolve("");
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onerror = reject;
+          reader.onload = () => {
+            const image = new Image();
+            image.onerror = reject;
+            image.onload = () => {
+              const size = Math.min(image.width, image.height);
+              const canvas = document.createElement("canvas");
+              const outputSize = 900;
+              canvas.width = outputSize;
+              canvas.height = outputSize;
+              const context = canvas.getContext("2d");
+              context.drawImage(
+                image,
+                (image.width - size) / 2,
+                (image.height - size) / 2,
+                size,
+                size,
+                0,
+                0,
+                outputSize,
+                outputSize,
+              );
+              resolve(canvas.toDataURL("image/jpeg", 0.82));
+            };
+            image.src = reader.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function renderImageField() {
+        return `
+          <label class="image-field">
+            图片（可选，自动裁成 1:1 方图）
+            <input name="imageFile" type="file" accept="image/*" />
+            <input name="imageUrl" type="hidden" value="${currentImageData || ""}" />
+            ${currentImageData ? `<img class="image-preview" src="${currentImageData}" alt="当前图片预览" />` : ""}
+          </label>
+        `;
+      }
+
       function renderForm() {
         if (currentSection === "herbs") {
           formFields.innerHTML = `
@@ -453,6 +542,7 @@
             <label>关键词<input name="keywords" placeholder="清场、保护、专注、疗愈" required /></label>
             <label>仪式用途<textarea name="ritualUse" placeholder="适合放进哪些仪式、什么时候使用"></textarea></label>
             <label>魔法用途<textarea name="magicUse" placeholder="写下对应的魔法用途、象征含义或搭配方向"></textarea></label>
+            ${renderImageField()}
           `;
         }
 
@@ -465,6 +555,7 @@
             <label>目标<textarea name="intention" placeholder="这个仪式想帮你完成什么"></textarea></label>
             <label>准备物品<input name="tools" placeholder="盐碗、薰衣草、笔记本" /></label>
             <label>步骤<textarea name="steps" placeholder="每行写一步"></textarea></label>
+            ${renderImageField()}
           `;
         }
 
@@ -481,8 +572,57 @@
             <label>标签<input name="tags" placeholder="迷迭香、薄荷、月桂叶" /></label>
             <label>说明<textarea name="detail" placeholder="写下配方说明"></textarea></label>
             <label>步骤<textarea name="steps" placeholder="每行写一步"></textarea></label>
+            ${renderImageField()}
           `;
         }
+      }
+
+      function setField(name, value) {
+        const field = entryForm.elements[name];
+        if (field) field.value = Array.isArray(value) ? value.join("、") : value || "";
+      }
+
+      function fillForm(entry) {
+        if (!entry) return;
+        currentImageData = entry.imageUrl || "";
+        renderForm();
+        setField("title", entry.title);
+        setField("imageUrl", entry.imageUrl);
+
+        if (currentSection === "herbs") {
+          setField("yinYang", entry.yinYang);
+          setField("planet", entry.planet);
+          setField("element", entry.element);
+          setField("deity", entry.deity);
+          setField("keywords", entry.keywords || entry.text);
+          setField("ritualUse", entry.ritualUse);
+          setField("magicUse", entry.magicUse || entry.detail);
+        }
+
+        if (currentSection === "rituals") {
+          setField("timing", entry.timing);
+          setField("intention", entry.intention);
+          setField("tools", entry.tools);
+          setField("steps", entry.steps);
+        }
+
+        if (currentSection === "recipes") {
+          setField("rating", entry.rating || "5.00");
+          setField("use", entry.use);
+          setField("meter", entry.meter || "90%");
+          setField("tags", entry.tags);
+          setField("detail", entry.detail);
+          setField("steps", entry.steps);
+        }
+      }
+
+      function resetEditingState() {
+        editingIndex = -1;
+        currentImageData = "";
+        entryForm.reset();
+        cancelEditButton.classList.add("hidden");
+        addButton.textContent = labels[currentSection].add;
+        renderForm();
       }
 
       function getEntrySummary(entry) {
@@ -501,7 +641,10 @@
                   <strong>${entry.title || "未命名"}</strong>
                   <small>${getEntrySummary(entry)}</small>
                 </div>
-                <button class="delete" type="button" data-delete="${index}">删除</button>
+                <div class="row-actions">
+                  <button class="edit" type="button" data-edit="${index}">编辑</button>
+                  <button class="delete" type="button" data-delete="${index}">删除</button>
+                </div>
               </article>
             `,
           )
@@ -517,14 +660,18 @@
       function render() {
         sectionTitle.textContent = labels[currentSection].title;
         sectionHint.textContent = labels[currentSection].hint;
-        addButton.textContent = labels[currentSection].add;
+        addButton.textContent = editingIndex >= 0 ? "保存这条修改" : labels[currentSection].add;
+        cancelEditButton.classList.toggle("hidden", editingIndex < 0);
         tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.section === currentSection));
         renderForm();
         renderList();
         renderCounts();
       }
 
-      function createEntry(formData) {
+      async function createEntry(formData) {
+        const imageFile = formData.get("imageFile");
+        const imageUrl = imageFile && imageFile.size ? await readSquareImage(imageFile) : formData.get("imageUrl") || "";
+
         if (currentSection === "herbs") {
           return {
             title: formData.get("title").trim(),
@@ -538,6 +685,7 @@
             text: formData.get("keywords").trim(),
             detail: formData.get("magicUse").trim() || formData.get("ritualUse").trim(),
             color: "custom",
+            imageUrl,
             sources: [],
           };
         }
@@ -549,6 +697,7 @@
             intention: formData.get("intention").trim(),
             tools: splitList(formData.get("tools") || ""),
             steps: splitList(formData.get("steps") || ""),
+            imageUrl,
             sources: [],
           };
         }
@@ -561,7 +710,7 @@
           tags: splitList(formData.get("tags") || ""),
           detail: formData.get("detail").trim(),
           steps: splitList(formData.get("steps") || ""),
-          imageUrl: "./assets/hero-herbs.png",
+          imageUrl: imageUrl || "./assets/hero-herbs.png",
           sources: [],
         };
       }
@@ -589,25 +738,53 @@
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
           currentSection = tab.dataset.section;
+          editingIndex = -1;
+          currentImageData = "";
           render();
         });
       });
 
-      entryForm.addEventListener("submit", (event) => {
+      entryForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const entry = createEntry(new FormData(entryForm));
-        content[currentSection].unshift(entry);
+        const entry = await createEntry(new FormData(entryForm));
+        if (editingIndex >= 0) {
+          content[currentSection][editingIndex] = entry;
+          setStatus("已更新，记得点保存并发布");
+        } else {
+          content[currentSection].unshift(entry);
+          setStatus("已添加，记得点保存并发布");
+        }
+        editingIndex = -1;
+        currentImageData = "";
         entryForm.reset();
         render();
-        setStatus("已添加，记得点保存并发布");
       });
 
       entryList.addEventListener("click", (event) => {
+        const editButton = event.target.closest("[data-edit]");
+        if (editButton) {
+          editingIndex = Number(editButton.dataset.edit);
+          fillForm(content[currentSection][editingIndex]);
+          addButton.textContent = "保存这条修改";
+          cancelEditButton.classList.remove("hidden");
+          entryForm.scrollIntoView({ behavior: "smooth", block: "start" });
+          setStatus("正在编辑，改完点保存这条修改");
+          return;
+        }
+
         const button = event.target.closest("[data-delete]");
         if (!button) return;
         content[currentSection].splice(Number(button.dataset.delete), 1);
+        editingIndex = -1;
+        currentImageData = "";
         render();
         setStatus("已删除，记得点保存并发布");
+      });
+
+      cancelEditButton.addEventListener("click", () => {
+        resetEditingState();
+        renderList();
+        setStatus("已取消编辑");
       });
 
       netlifyIdentity.on("init", async (user) => {
