@@ -1,20 +1,5 @@
 {
-  "herbs": [
-    {
-      "title": "阿拉伯胶树",
-      "yinYang": "阳性",
-      "planet": "太阳",
-      "element": "风",
-      "deity": "冥王奥塞里斯Osiris,腓尼基神话中大地和生育女神阿斯塔特Astarte，自然与丰收女神伊什塔尔Ishtar，月亮与狩猎女神黛安娜Diana，古埃及太阳神拉Ra",
-      "keywords": "保护 灵力",
-      "ritualUse": "",
-      "magicUse": "",
-      "text": "保护 灵力",
-      "detail": "",
-      "color": "custom",
-      "sources": []
-    }
-  ],
+  "herbs": [],
   "rituals": [],
   "recipes": [],
   "sources": []
