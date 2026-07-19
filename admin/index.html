@@ -10,7 +10,6 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&display=swap"
       rel="stylesheet"
     />
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
       :root {
         --bg: #d8ddd7;
@@ -331,7 +330,7 @@
           <span class="mark">☾</span>
           <div>
             <h1>Moonherb Studio</h1>
-            <p>只改内容，不碰代码。保存后会发布到 moonherb.netlify.app。</p>
+            <p>只改内容，不碰代码。保存后会发布到 moonherb.vercel.app。</p>
           </div>
         </div>
         <div class="actions">
@@ -342,8 +341,12 @@
       </section>
 
       <section class="panel login-card" id="loginCard">
-        <h2>先登录你的后台账号</h2>
-        <p class="muted">使用你刚才在 Netlify 邮件里设置的邮箱和密码。</p>
+        <h2>先输入后台密码</h2>
+        <p class="muted">只有知道这个密码的人可以进入编辑后台。</p>
+        <label>
+          后台密码
+          <input id="adminPasswordInput" type="password" placeholder="输入你在 Vercel 设置的密码" />
+        </label>
       </section>
 
       <section class="workspace hidden" id="workspace">
@@ -378,7 +381,7 @@
     </main>
 
     <script>
-      const contentPath = "/.netlify/git/github/contents/data/content.json";
+      const contentPath = "/api/content";
       const defaults = { herbs: [], rituals: [], recipes: [], sources: [] };
       const labels = {
         herbs: { title: "草药档案", hint: "新增、编辑或删除草药，保存后公开页会同步。", add: "新增草药" },
@@ -386,14 +389,14 @@
         recipes: { title: "配方手记", hint: "新增或编辑配方卡，公开页会进入配方手记。", add: "新增配方" },
       };
 
-      let currentUser = null;
+      let adminPassword = sessionStorage.getItem("moonherbAdminPassword") || "";
       let currentSection = "herbs";
-      let fileSha = "";
       let content = structuredClone(defaults);
       let editingIndex = -1;
       let currentImageData = "";
 
       const loginButton = document.querySelector("#loginButton");
+      const adminPasswordInput = document.querySelector("#adminPasswordInput");
       const viewSiteButton = document.querySelector("#viewSiteButton");
       const saveButton = document.querySelector("#saveButton");
       const loginCard = document.querySelector("#loginCard");
@@ -412,26 +415,13 @@
         statusText.textContent = message;
       }
 
-      function encodeBase64(value) {
-        return btoa(unescape(encodeURIComponent(value)));
-      }
-
-      function decodeBase64(value) {
-        return decodeURIComponent(escape(atob(value.replace(/\n/g, ""))));
-      }
-
-      async function getToken() {
-        if (!currentUser) throw new Error("请先登录。");
-        return currentUser.jwt();
-      }
-
-      async function requestGitGateway(path, options = {}) {
-        const token = await getToken();
-        return fetch(path, {
+      async function requestContentApi(options = {}) {
+        if (!adminPassword) throw new Error("请先输入后台密码。");
+        return fetch(contentPath, {
           ...options,
           headers: {
-            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            "x-admin-password": adminPassword,
             ...(options.headers || {}),
           },
         });
@@ -448,31 +438,28 @@
 
       async function loadContent() {
         setStatus("正在读取内容...");
-        const response = await requestGitGateway(contentPath);
-        if (!response.ok) throw new Error("读取失败，请确认 Git Gateway 已开启。");
-        const file = await response.json();
-        fileSha = file.sha;
-        content = normalizeContent(JSON.parse(decodeBase64(file.content)));
+        const response = await requestContentApi();
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || "读取失败，请确认后台密码和 Vercel 环境变量。");
+        }
+        const result = await response.json();
+        content = normalizeContent(result.content || {});
         render();
         setStatus("内容已载入");
       }
 
       async function saveContent() {
         setStatus("正在保存...");
-        const body = {
-          message: "Update moonherb content from studio",
-          content: encodeBase64(JSON.stringify(content, null, 2)),
-          sha: fileSha,
-          branch: "main",
-        };
-        const response = await requestGitGateway(contentPath, {
+        const response = await requestContentApi({
           method: "PUT",
-          body: JSON.stringify(body),
+          body: JSON.stringify({ content }),
         });
-        if (!response.ok) throw new Error("保存失败，请稍后再试。");
-        const result = await response.json();
-        fileSha = result.content.sha;
-        setStatus("已保存，Netlify 正在自动发布");
+        if (!response.ok) {
+          const result = await response.json().catch(() => ({}));
+          throw new Error(result.error || "保存失败，请稍后再试。");
+        }
+        setStatus("已保存，Vercel 正在自动发布");
       }
 
       function splitList(value) {
@@ -715,12 +702,37 @@
         };
       }
 
-      loginButton.addEventListener("click", () => {
-        if (currentUser) {
-          netlifyIdentity.logout();
+      async function enterWorkspace() {
+        loginButton.textContent = "退出";
+        loginCard.classList.add("hidden");
+        workspace.classList.remove("hidden");
+        await loadContent();
+      }
+
+      loginButton.addEventListener("click", async () => {
+        if (adminPassword) {
+          adminPassword = "";
+          sessionStorage.removeItem("moonherbAdminPassword");
+          loginButton.textContent = "登录后台";
+          workspace.classList.add("hidden");
+          loginCard.classList.remove("hidden");
+          setStatus("已退出");
           return;
         }
-        netlifyIdentity.open("login");
+
+        adminPassword = adminPasswordInput.value.trim();
+        if (!adminPassword) {
+          setStatus("请输入后台密码");
+          return;
+        }
+        sessionStorage.setItem("moonherbAdminPassword", adminPassword);
+        try {
+          await enterWorkspace();
+        } catch (error) {
+          adminPassword = "";
+          sessionStorage.removeItem("moonherbAdminPassword");
+          setStatus(error.message);
+        }
       });
 
       viewSiteButton.addEventListener("click", () => {
@@ -787,41 +799,17 @@
         setStatus("已取消编辑");
       });
 
-      netlifyIdentity.on("init", async (user) => {
-        currentUser = user;
-        if (!currentUser) return;
-        loginButton.textContent = "退出";
-        loginCard.classList.add("hidden");
-        workspace.classList.remove("hidden");
-        try {
-          await loadContent();
-        } catch (error) {
+      if (adminPassword) {
+        enterWorkspace().catch((error) => {
+          adminPassword = "";
+          sessionStorage.removeItem("moonherbAdminPassword");
+          loginButton.textContent = "登录后台";
+          workspace.classList.add("hidden");
+          loginCard.classList.remove("hidden");
           setStatus(error.message);
-        }
-      });
+        });
+      }
 
-      netlifyIdentity.on("login", async (user) => {
-        currentUser = user;
-        netlifyIdentity.close();
-        loginButton.textContent = "退出";
-        loginCard.classList.add("hidden");
-        workspace.classList.remove("hidden");
-        try {
-          await loadContent();
-        } catch (error) {
-          setStatus(error.message);
-        }
-      });
-
-      netlifyIdentity.on("logout", () => {
-        currentUser = null;
-        loginButton.textContent = "登录后台";
-        workspace.classList.add("hidden");
-        loginCard.classList.remove("hidden");
-        setStatus("已退出");
-      });
-
-      netlifyIdentity.init();
       render();
     </script>
   </body>
